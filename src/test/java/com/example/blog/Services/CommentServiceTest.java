@@ -1,0 +1,181 @@
+package com.example.blog.Services;
+
+import com.example.blog.Models.Article;
+import com.example.blog.Models.Comment;
+import com.example.blog.Models.Enums.Role;
+import com.example.blog.Models.User;
+import com.example.blog.Repositories.CommentRepository;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
+
+import java.util.HashSet;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+public class CommentServiceTest {
+
+    @Mock
+    private CommentRepository commentRepository;
+    @Mock
+    private ArticleService articleService;
+
+    @Mock
+    private CustomUserDetailsService customUserDetailsService;
+    @Mock
+    private UserService userService;
+
+    @InjectMocks
+    private CommentService commentService;
+
+    @Test
+    public void addCommentToArticle() {
+        User user = User.builder()
+                .username("crossfade")
+                .build();
+        Article article = new Article();
+        Comment comment = Comment.builder()
+                .text("comment")
+                .build();
+
+        when(commentRepository.save(comment)).thenReturn(comment);
+        when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
+        when(articleService.findArticleById(anyLong())).thenReturn(article);
+
+        commentService.addCommentToArticle(comment, 1L);
+        System.out.println(article.getComments());
+
+        Assertions.assertThat(comment.getUser()).isEqualTo(user);
+        Assertions.assertThat(comment.getArticle()).isEqualTo(article);
+    }
+
+    @Test
+    public void putLikeTest() {
+        User user=new User();
+        Comment comment = Comment.builder()
+                .text("comment")
+                .likes(9)
+                .build();
+        when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
+        when(commentRepository.save(comment)).thenReturn(comment);
+        when(commentRepository.findById(anyLong())).thenReturn(Optional.of(comment));
+        when(userService.saveUser(any(User.class))).thenReturn(user);
+        commentService.putLike(1L);
+
+        Assertions.assertThat(comment.getLikes()).isEqualTo(10);
+    }
+    @Test
+    public void putLike_ThrowException_Test() {
+
+        Comment comment = Comment.builder()
+                .id(1L)
+                .text("comment")
+                .likes(9)
+                .build();
+       User user=new User();
+       user.getLikedComments().add(comment.getId());
+        when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
+        when(commentRepository.findById(anyLong())).thenReturn(Optional.of(comment));
+
+        Assertions.assertThatThrownBy(()-> commentService.putLike(1L)).isInstanceOf(IllegalArgumentException.class);
+
+
+
+    }
+
+    @Test
+    public void addCommentToParentComment_ThrowException_Test() {
+        User user = User.builder()
+                .username("crossfade")
+                .build();
+        Article article = new Article();
+        Comment parentComment = Comment.builder()
+                .text("parent-comment")
+                .build();
+        Comment comment = Comment.builder()
+                .text("comment")
+                .parentComment(parentComment)
+                .article(article)
+                .build();
+        Comment newComment = Comment.builder()
+                .text("asdf")
+                .build();
+
+
+        when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
+        when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(comment));
+
+
+        Assertions.assertThatThrownBy(()-> commentService.addCommentToParentComment(newComment, 1L)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void updateCommentById_ByUserRole_Test(){
+        User user=User.builder()
+                .role(Role.USER)
+                .comments(new HashSet<>())
+                .build();
+        long commentId= 1L;
+        Comment commentToUpdate = Comment.builder()
+                .id(commentId)
+                .text("comment")
+                .build();
+        Comment comment=new Comment();
+        user.getComments().add(commentToUpdate);
+        when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
+        when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(commentToUpdate));
+        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+
+        Comment commentToCheck=commentService.updateCommentById(comment,commentId);
+
+        Assertions.assertThat(commentToCheck.getId()).isEqualTo(commentId);
+    }
+    @Test
+    public void updateCommentById_ByAdminRole_Test(){
+        User user=User.builder()
+                .role(Role.ADMIN)
+                .comments(new HashSet<>())
+                .build();
+        long commentId= 1L;
+        Comment commentToUpdate = Comment.builder()
+                .id(commentId)
+                .text("comment")
+                .build();
+        Comment comment=new Comment();
+        when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
+        when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(commentToUpdate));
+        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+
+        Comment commentToCheck=commentService.updateCommentById(comment,commentId);
+
+        Assertions.assertThat(commentToCheck.getId()).isEqualTo(commentId);
+    }
+
+    @Test
+    public void updateCommentById_ThrowException_Test(){
+        User user=User.builder()
+                .role(Role.USER)
+                .comments(new HashSet<>())
+                .build();
+        long commentId= 1L;
+        Comment commentToUpdate = Comment.builder()
+                .id(commentId)
+                .text("comment")
+                .build();
+        Comment comment=new Comment();
+        when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
+        when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(commentToUpdate));
+        Assertions.assertThatThrownBy(()-> commentService.updateCommentById(comment,commentId)).isInstanceOf(AccessDeniedException.class);
+
+
+    }
+
+}

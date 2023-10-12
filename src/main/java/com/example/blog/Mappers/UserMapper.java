@@ -1,0 +1,33 @@
+package com.example.blog.Mappers;
+
+import com.example.blog.Models.DTOs.UserDTO;
+import com.example.blog.Models.User;
+
+public class UserMapper {
+    public UserDTO toDTO(User user){
+        UserDTO userDTO=UserDTO.builder()
+                .id(user.getId())
+                .creationDate(user.getCreationDate())
+                .password(user.getPassword())
+                .email(user.getEmail())
+                .firstname(user.getFirstname())
+                .lastname(user.getLastname())
+                .selfDescription(user.getSelfDescription())
+                .username(user.getUsername())
+                .build();
+        return userDTO;
+    }
+    public User toEntity(UserDTO userDTO){
+        User user=User.builder()
+                .id(userDTO.getId())
+                .creationDate(userDTO.getCreationDate())
+                .password(userDTO.getPassword())
+                .email(userDTO.getEmail())
+                .firstname(userDTO.getFirstname())
+                .lastname(userDTO.getLastname())
+                .selfDescription(userDTO.getSelfDescription())
+                .username(userDTO.getUsername())
+                .build();
+        return user;
+    }
+}
