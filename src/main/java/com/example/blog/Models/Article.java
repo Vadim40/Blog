@@ -21,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE article SET deleted = true WHERE id=?")
-@Where(clause = "deleted=false")
+@Where(clause = "deleted=false and published=true")
 public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,6 +37,9 @@ public class Article {
 
     @Column
     private boolean deleted = false;
+
+    @Column
+    private boolean published=false;
 //    @Column
 //    @Enumerated
 //    private Category category;

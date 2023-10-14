@@ -29,6 +29,10 @@ public class Topic {
     @ManyToMany(mappedBy = "topicsOfInterest")
     private Set<User> interestedUsers = new HashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "parent_topic_id")
+    private  Topic parentTopic;
+
     @ManyToMany(mappedBy = "topics")
     private Set<Article> articles=new HashSet<>();
 }
