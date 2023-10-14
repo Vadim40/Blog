@@ -15,9 +15,9 @@
 
     import java.time.LocalDate;
     import java.util.Collection;
-    import java.util.Collections;
     import java.util.HashSet;
     import java.util.Set;
+    import java.util.stream.Collectors;
 
     @Entity
     @Table(name = "users_table")
@@ -46,8 +46,7 @@
         private String email;
         @Column
         private  String password ;
-        @Column
-        private Role role;
+
 
         @Column(name = "self_description")
         private String selfDescription;
@@ -57,7 +56,13 @@
 
         @Column
         private boolean deleted=false;
-
+        @ElementCollection
+        @CollectionTable(
+                name="user_role",
+                joinColumns = @JoinColumn(name = "user_id")
+        )
+        @Column(name="role")
+        private Set<Role> roles=new HashSet<>();
         @ManyToMany
         @JoinTable(
                 name = "user_subscriptions",
@@ -108,8 +113,11 @@
         private Set<Topic> topicsOfInterest=new HashSet<>();
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
-            return Collections.singleton(new SimpleGrantedAuthority(role.getDisplayName()));
+            return roles.stream()
+                    .map(role -> new SimpleGrantedAuthority(role.getDisplayName()))
+                    .collect(Collectors.toList());
         }
+
 
 
         @Override

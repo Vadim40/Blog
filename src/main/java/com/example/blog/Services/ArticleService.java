@@ -129,7 +129,7 @@ public class ArticleService implements IArticleService {
     private void checkArticleAccess(long articleId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Article articleToCheck = findArticleById(articleId);
-        if (!authenticatedUser.getRole().equals(Role.ADMIN) && !authenticatedUser.getArticles().contains(articleToCheck)) {
+        if (!authenticatedUser.getRoles().contains(Role.ADMIN) && !authenticatedUser.getArticles().contains(articleToCheck)) {
             throw new AccessDeniedException("You don't have permission to perform this action on the article");
         }
     }

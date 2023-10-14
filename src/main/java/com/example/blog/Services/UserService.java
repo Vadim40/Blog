@@ -84,7 +84,7 @@ public class UserService implements IUserService {
     @Override
     public User saveUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(Role.USER);
+        user.getRoles().add(Role.USER);
         user.setCreationDate(LocalDate.now());
         return userRepository.save(user);
     }
@@ -104,7 +104,7 @@ public class UserService implements IUserService {
 
     private void checkUserAccess(long userId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        if (!authenticatedUser.getRole().equals(Role.ADMIN) && authenticatedUser.getId() != userId) {
+        if (!authenticatedUser.getRoles().contains(Role.ADMIN) && authenticatedUser.getId() != userId) {
             throw new AccessDeniedException("You don't have permission to update this user");
         }
     }

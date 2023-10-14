@@ -5,6 +5,7 @@ import com.example.blog.Models.Comment;
 import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.CommentRepository;
+import com.example.blog.Repositories.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
-import java.util.HashSet;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -29,9 +29,9 @@ public class CommentServiceTest {
     private ArticleService articleService;
 
     @Mock
-    private CustomUserDetailsService customUserDetailsService;
+    private UserRepository userRepository;
     @Mock
-    private UserService userService;
+    private CustomUserDetailsService customUserDetailsService;
 
     @InjectMocks
     private CommentService commentService;
@@ -67,7 +67,7 @@ public class CommentServiceTest {
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
         when(commentRepository.save(comment)).thenReturn(comment);
         when(commentRepository.findById(anyLong())).thenReturn(Optional.of(comment));
-        when(userService.saveUser(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenReturn(user);
         commentService.putLike(1L);
 
         Assertions.assertThat(comment.getLikes()).isEqualTo(10);
@@ -119,10 +119,8 @@ public class CommentServiceTest {
 
     @Test
     public void updateCommentById_ByUserRole_Test(){
-        User user=User.builder()
-                .role(Role.USER)
-                .comments(new HashSet<>())
-                .build();
+        User user=new User();
+        user.getRoles().add(Role.USER);
         long commentId= 1L;
         Comment commentToUpdate = Comment.builder()
                 .id(commentId)
@@ -140,10 +138,8 @@ public class CommentServiceTest {
     }
     @Test
     public void updateCommentById_ByAdminRole_Test(){
-        User user=User.builder()
-                .role(Role.ADMIN)
-                .comments(new HashSet<>())
-                .build();
+        User user=new User();
+        user.getRoles().add(Role.ADMIN);
         long commentId= 1L;
         Comment commentToUpdate = Comment.builder()
                 .id(commentId)
@@ -161,10 +157,8 @@ public class CommentServiceTest {
 
     @Test
     public void updateCommentById_ThrowException_Test(){
-        User user=User.builder()
-                .role(Role.USER)
-                .comments(new HashSet<>())
-                .build();
+        User user=new User();
+        user.getRoles().add(Role.USER);
         long commentId= 1L;
         Comment commentToUpdate = Comment.builder()
                 .id(commentId)

@@ -5,6 +5,7 @@ import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.Image;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.ArticleRepository;
+import com.example.blog.Repositories.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.when;
 public class ArticleServiceTest {
 
     @Mock
-    private UserService userService;
+    private UserRepository userRepository;
     @Mock
     private ArticleRepository articleRepository;
     @Mock
@@ -75,11 +76,8 @@ public class ArticleServiceTest {
 
     @Test
     public void updateArticleById_UserRole_Test() {
-        User user = User.builder()
-                .role(Role.USER)
-                .username("valentine")
-                .articles(new HashSet<>())
-                .build();
+        User user=new User();
+        user.getRoles().add(Role.USER);
         long articleId = 1L;
         Article articleToUpdate = Article.builder()
                 .id(articleId)
@@ -99,11 +97,8 @@ public class ArticleServiceTest {
 
     @Test
     public void updateArticleById_AdminRole_Test() {
-        User user = User.builder()
-                .role(Role.ADMIN)
-                .username("valentine")
-                .articles(new HashSet<>())
-                .build();
+        User user=new User();
+        user.getRoles().add(Role.ADMIN);
         long articleId = 1L;
         Article articleToUpdate = Article.builder()
                 .id(articleId)
@@ -122,11 +117,8 @@ public class ArticleServiceTest {
 
     @Test
     public void updateArticleById_ThrowException_Test() {
-        User user = User.builder()
-                .role(Role.USER)
-                .username("valentine")
-                .articles(new HashSet<>())
-                .build();
+        User user=new User();
+        user.getRoles().add(Role.USER);
         long articleId = 1L;
         Article articleToUpdate = Article.builder()
                 .id(articleId)
@@ -157,7 +149,7 @@ public class ArticleServiceTest {
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
         when(articleRepository.findById(any(Long.class))).thenReturn(Optional.of(article));
         when(articleRepository.save(any(Article.class))).thenReturn(article);
-        when(userService.saveUser(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenReturn(user);
         articleService.putLike(articleId);
 
         Assertions.assertThat(article.getLikes()).isEqualTo(10);
