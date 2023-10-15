@@ -4,7 +4,7 @@ import com.example.blog.Models.User;
 
 import java.util.Set;
 
-public interface IUserService {
+public interface UserService {
     User findUserByArticleId(long articleId);
 
     User findUserByCommentId(long commentId);

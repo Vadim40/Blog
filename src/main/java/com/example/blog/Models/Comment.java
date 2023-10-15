@@ -20,7 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE comment SET deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE comments SET deleted = true WHERE id=?")
 @Where(clause = "deleted=false")
 public class Comment {
     @Id

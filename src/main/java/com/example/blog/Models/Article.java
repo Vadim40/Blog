@@ -20,7 +20,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE article SET deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE articles SET deleted = true WHERE id=?")
 @Where(clause = "deleted=false and published=true")
 public class Article {
     @Id
@@ -40,14 +40,7 @@ public class Article {
 
     @Column
     private boolean published=false;
-//    @Column
-//    @Enumerated
-//    private Category category;
 
-//    @ElementCollection
-//    @CollectionTable(name = "article_tags", joinColumns = @JoinColumn(name = "article_id"))
-//    @Column(name = "tag")
-//    private Set<String> tags= new HashSet<>();
     @ManyToMany
     @JoinTable(
             name = "article_topic",

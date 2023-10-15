@@ -32,7 +32,7 @@ public class ArticleServiceTest {
     private CustomUserDetailsService customUserDetailsService;
 
     @InjectMocks
-    private ArticleService articleService;
+    private ArticleServiceImpl articleService;
 
 
     @Test

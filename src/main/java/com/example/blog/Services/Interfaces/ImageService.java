@@ -2,7 +2,7 @@ package com.example.blog.Services.Interfaces;
 
 import com.example.blog.Models.Image;
 
-public interface IImageService {
+public interface ImageService {
 
     Image saveImage(Image image);
     Image findImageById(long imageId);

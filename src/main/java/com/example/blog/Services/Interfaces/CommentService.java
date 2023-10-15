@@ -1,11 +1,10 @@
 package com.example.blog.Services.Interfaces;
 
-import com.example.blog.Models.Article;
 import com.example.blog.Models.Comment;
 
 import java.util.Set;
 
-public interface ICommentService {
+public interface CommentService {
     Set<Comment> findCommentsByArticleId(long articleId);
 
     Set<Comment> findCommentsByUserId(long userId);

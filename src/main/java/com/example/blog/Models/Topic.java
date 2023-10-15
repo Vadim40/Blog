@@ -17,21 +17,20 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE user_table SET deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE topics SET deleted = true WHERE id=?")
 @Where(clause = "deleted=false")
 public class Topic {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
     private long id;
 
+    @Column
     private String name;
 
     @ManyToMany(mappedBy = "topicsOfInterest")
     private Set<User> interestedUsers = new HashSet<>();
 
-    @ManyToOne
-    @JoinColumn(name = "parent_topic_id")
-    private  Topic parentTopic;
 
     @ManyToMany(mappedBy = "topics")
     private Set<Article> articles=new HashSet<>();

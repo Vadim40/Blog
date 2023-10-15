@@ -26,7 +26,7 @@ public class CommentServiceTest {
     @Mock
     private CommentRepository commentRepository;
     @Mock
-    private ArticleService articleService;
+    private ArticleServiceImpl articleService;
 
     @Mock
     private UserRepository userRepository;
@@ -34,7 +34,7 @@ public class CommentServiceTest {
     private CustomUserDetailsService customUserDetailsService;
 
     @InjectMocks
-    private CommentService commentService;
+    private CommentServiceImpl commentService;
 
     @Test
     public void addCommentToArticle() {

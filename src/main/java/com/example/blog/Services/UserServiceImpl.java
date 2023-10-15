@@ -5,7 +5,7 @@ import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.Image;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.UserRepository;
-import com.example.blog.Services.Interfaces.IUserService;
+import com.example.blog.Services.Interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,7 +16,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class UserService implements IUserService {
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
@@ -105,7 +105,7 @@ public class UserService implements IUserService {
     private void checkUserAccess(long userId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         if (!authenticatedUser.getRoles().contains(Role.ADMIN) && authenticatedUser.getId() != userId) {
-            throw new AccessDeniedException("You don't have permission to update this user");
+            throw new AccessDeniedException("You don't have permission to perform this action on this this user");
         }
     }
 }

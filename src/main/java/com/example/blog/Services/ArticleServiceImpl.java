@@ -4,25 +4,25 @@ import com.example.blog.Excteptions.ArticleNotFoundException;
 import com.example.blog.Models.Article;
 import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.Image;
+import com.example.blog.Models.Topic;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.ArticleRepository;
 import com.example.blog.Repositories.UserRepository;
-import com.example.blog.Services.Interfaces.IArticleService;
+import com.example.blog.Services.Interfaces.ArticleService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class ArticleService implements IArticleService {
+public class ArticleServiceImpl implements ArticleService {
     private final ArticleRepository articleRepository;
     private final CustomUserDetailsService customUserDetailsService;
     private final UserRepository userRepository;
@@ -39,23 +39,24 @@ public class ArticleService implements IArticleService {
         return authenticationUser.getSavedArticles();
     }
 
-//    @Override
-//    public Page<Article> findArticlesByCategory(Category category, int size, int page) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        return articleRepository.findByCategory(category, pageable);
-//    }
+    @Override
+    public Page<Article> findArticlesByTopic(Topic topic, int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        return articleRepository.findArticlesByTopic(topic, pageable);
+    }
 
-//    @Override
-//    public Page<Article> findArticlesByTags(Set<String> tags, int size, int page) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        return articleRepository.findByTags(tags, pageable);
-//    }
-//
-//    @Override
-//    public Page<Article> findArticlesByAllTags(Set<String> tags, int size, int page) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        return articleRepository.findByAllTags(tags, tags.size(), pageable);
-//    }
+    @Override
+    public Page<Article> findArticlesByUserTopicOfInterest(int size, int page) {
+        User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
+        List<Article> articles = new ArrayList<>();
+        for (Topic topic : authenticatedUser.getTopicsOfInterest()) {
+            articles.addAll(findArticlesByTopic(topic, size, page).getContent());
+        }
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Article> articlesUserTopicsOfInterest = new PageImpl<>(articles, pageable, articles.size());
+        return articlesUserTopicsOfInterest;
+    }
+
 
     @Override
     public Page<Article> findArticlesByTitleIsContainingIgnoreCaseString(String title, int size, int page) {
@@ -78,6 +79,7 @@ public class ArticleService implements IArticleService {
     public Article findArticleById(long articleId) {
         return articleRepository.findById(articleId).orElseThrow(() -> new ArticleNotFoundException("Article not found."));
     }
+
     @Override
     public void addToSavedUserArticles(long articleId) {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
@@ -99,6 +101,7 @@ public class ArticleService implements IArticleService {
         authenticationUser.getSavedArticles().remove(article);
         userRepository.save(authenticationUser);
     }
+
     @Override
     public Article saveArticle(Article article) {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
@@ -130,7 +133,7 @@ public class ArticleService implements IArticleService {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Article articleToCheck = findArticleById(articleId);
         if (!authenticatedUser.getRoles().contains(Role.ADMIN) && !authenticatedUser.getArticles().contains(articleToCheck)) {
-            throw new AccessDeniedException("You don't have permission to perform this action on the article");
+            throw new AccessDeniedException("You don't have permission to perform this action on this article");
         }
     }
 

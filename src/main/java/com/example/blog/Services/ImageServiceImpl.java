@@ -1,19 +1,15 @@
 package com.example.blog.Services;
 
 import com.example.blog.Excteptions.ImageNotFoundException;
-import com.example.blog.Models.Article;
 import com.example.blog.Models.Image;
-import com.example.blog.Models.User;
-import com.example.blog.Repositories.ArticleRepository;
 import com.example.blog.Repositories.ImageRepository;
-import com.example.blog.Services.Interfaces.IImageService;
-import lombok.AllArgsConstructor;
+import com.example.blog.Services.Interfaces.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class ImageService implements IImageService {
+public class ImageServiceImpl implements ImageService {
     private final ImageRepository imageRepository;
 
     @Override

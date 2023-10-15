@@ -5,7 +5,7 @@ import com.example.blog.Models.User;
 
 public class UserMapper {
     public UserDTO toDTO(User user){
-        UserDTO userDTO=UserDTO.builder()
+        return UserDTO.builder()
                 .id(user.getId())
                 .creationDate(user.getCreationDate())
                 .password(user.getPassword())
@@ -15,10 +15,9 @@ public class UserMapper {
                 .selfDescription(user.getSelfDescription())
                 .username(user.getUsername())
                 .build();
-        return userDTO;
     }
     public User toEntity(UserDTO userDTO){
-        User user=User.builder()
+        return User.builder()
                 .id(userDTO.getId())
                 .creationDate(userDTO.getCreationDate())
                 .password(userDTO.getPassword())
@@ -28,6 +27,5 @@ public class UserMapper {
                 .selfDescription(userDTO.getSelfDescription())
                 .username(userDTO.getUsername())
                 .build();
-        return user;
     }
 }

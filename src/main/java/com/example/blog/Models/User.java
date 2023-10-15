@@ -25,7 +25,7 @@
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    @SQLDelete(sql = "UPDATE user_table SET deleted = true WHERE id=?")
+    @SQLDelete(sql = "UPDATE users_table SET deleted = true WHERE id=?")
     @Where(clause = "deleted=false")
     public class User implements UserDetails {
         @Id

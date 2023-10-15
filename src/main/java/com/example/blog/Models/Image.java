@@ -10,7 +10,7 @@ import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "images")
-@SQLDelete(sql = "UPDATE comment SET deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE images SET deleted = true WHERE id=?")
 @Where(clause = "deleted=false")
 @Data
 @Builder

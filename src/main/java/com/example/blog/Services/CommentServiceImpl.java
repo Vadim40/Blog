@@ -7,7 +7,7 @@ import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.CommentRepository;
 import com.example.blog.Repositories.UserRepository;
-import com.example.blog.Services.Interfaces.ICommentService;
+import com.example.blog.Services.Interfaces.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -18,9 +18,9 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class CommentService implements ICommentService {
+public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
-    private final ArticleService articleService;
+    private final ArticleServiceImpl articleService;
     private final UserRepository userRepository;
     private final CustomUserDetailsService customUserDetailsService;
 
