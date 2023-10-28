@@ -3,6 +3,7 @@ package com.example.blog.Services;
 import com.example.blog.Models.Article;
 import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.Image;
+import com.example.blog.Models.Topic;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.ArticleRepository;
 import com.example.blog.Repositories.UserRepository;
@@ -12,9 +13,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,6 +34,7 @@ public class ArticleServiceTest {
     private UserRepository userRepository;
     @Mock
     private ArticleRepository articleRepository;
+
     @Mock
     private CustomUserDetailsService customUserDetailsService;
 
@@ -73,6 +80,42 @@ public class ArticleServiceTest {
 
         Assertions.assertThat(article.getUser()).isEqualTo(user);
     }
+    @Test
+    public void findArticlesByUserTopicInterest(){
+        Topic topicJava=Topic.builder()
+                .id(1L)
+                .name("java")
+                .build();
+        Topic topicLife=Topic.builder()
+                .id(2L)
+                .name("life")
+                .build();
+        Set<Topic> topicOfInterest=new HashSet<>();
+        topicOfInterest.add(topicLife);
+        topicOfInterest.add(topicJava);
+        User user=User.builder()
+                .topicsOfInterest(topicOfInterest)
+                .build();
+        Article article1=Article.builder()
+                .topics(Set.of(topicJava))
+                .build();
+        Article article2=Article.builder()
+                .topics(Set.of(topicLife,topicJava))
+                .build();
+        Pageable pageable= PageRequest.of(0,10);
+        when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
+        when(articleRepository.findArticlesByTopicsId(topicJava.getId(),pageable))
+                .thenReturn(new PageImpl<>(List.of(article1,article2),pageable,2));
+        when(articleRepository.findArticlesByTopicsId(topicLife.getId(),pageable))
+                .thenReturn(new PageImpl<>(List.of(article2),pageable,1));
+        Page<Article> articlesUserTopicsOfInterest=articleService.findArticlesByUserTopicOfInterest(10,0);
+
+        Assertions.assertThat(articlesUserTopicsOfInterest.getTotalElements()).isEqualTo(2);
+
+    }
+
+
+
 
     @Test
     public void updateArticleById_UserRole_Test() {

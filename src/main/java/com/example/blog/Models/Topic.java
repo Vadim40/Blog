@@ -31,6 +31,7 @@ public class Topic {
     @ManyToMany(mappedBy = "topicsOfInterest")
     private Set<User> interestedUsers = new HashSet<>();
 
+    private  boolean deleted=false;
 
     @ManyToMany(mappedBy = "topics")
     private Set<Article> articles=new HashSet<>();

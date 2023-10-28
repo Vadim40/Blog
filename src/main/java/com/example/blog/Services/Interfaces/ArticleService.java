@@ -1,7 +1,6 @@
 package com.example.blog.Services.Interfaces;
 
 import com.example.blog.Models.Article;
-import com.example.blog.Models.Topic;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
@@ -13,7 +12,7 @@ public interface ArticleService {
     Set<Article> findSavedArticlesByAuthenticationUser();
 
 
-    Page<Article> findArticlesByTopic(Topic topic, int size, int page);
+    Page<Article> findArticlesByTopic(long topicId, int size, int page);
 
     Page<Article> findArticlesByUserTopicOfInterest(int size, int page);
 
@@ -26,6 +25,8 @@ public interface ArticleService {
     Article findArticleByCommentId(long commentId);
 
     Article findArticleById(long articleId);
+
+    Article publishArticle(Article article);
 
     Article  saveArticle(Article article);
 

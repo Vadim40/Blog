@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,21 +40,20 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Page<Article> findArticlesByTopic(Topic topic, int size, int page) {
+    public Page<Article> findArticlesByTopic(long topicId, int size, int page) {
         Pageable pageable = PageRequest.of(page, size);
-        return articleRepository.findArticlesByTopic(topic, pageable);
+        return articleRepository.findArticlesByTopicsId(topicId, pageable);
     }
 
     @Override
     public Page<Article> findArticlesByUserTopicOfInterest(int size, int page) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        List<Article> articles = new ArrayList<>();
+        Set<Article> articles = new HashSet<>();
         for (Topic topic : authenticatedUser.getTopicsOfInterest()) {
-            articles.addAll(findArticlesByTopic(topic, size, page).getContent());
+            articles.addAll(findArticlesByTopic(topic.getId(), size, page).getContent());
         }
         Pageable pageable = PageRequest.of(page, size);
-        Page<Article> articlesUserTopicsOfInterest = new PageImpl<>(articles, pageable, articles.size());
-        return articlesUserTopicsOfInterest;
+        return new PageImpl<>(List.copyOf(articles), pageable, articles.size());
     }
 
 
@@ -78,6 +77,12 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Article findArticleById(long articleId) {
         return articleRepository.findById(articleId).orElseThrow(() -> new ArticleNotFoundException("Article not found."));
+    }
+
+    @Override
+    public Article publishArticle(Article article) {
+        article.setPublished(true);
+        return articleRepository.save(article);
     }
 
     @Override
@@ -119,6 +124,9 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Article updateArticleById(Article article, long articleId) {
         checkArticleAccess(articleId);
+        if (findArticleById(articleId).isPublished()) {
+            throw new UnsupportedOperationException("You dont have permission to update this article");
+        }
         article.setId(articleId);
         return articleRepository.save(article);
     }
