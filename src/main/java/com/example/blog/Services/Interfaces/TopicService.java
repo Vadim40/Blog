@@ -5,8 +5,9 @@ import com.example.blog.Models.Topic;
 import java.util.Set;
 
 public interface TopicService {
-    Set<Topic> findTopicsByNameContaining(String name);
+    Set<Topic> findTopicsByNameIgnoreCaseContaining(String name);
 
+    Topic findTopicByName(String name);
     Set<Topic> findAllTopics();
 
     Topic findTopicById(long topicId);

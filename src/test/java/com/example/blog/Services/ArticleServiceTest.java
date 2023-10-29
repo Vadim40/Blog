@@ -80,46 +80,45 @@ public class ArticleServiceTest {
 
         Assertions.assertThat(article.getUser()).isEqualTo(user);
     }
+
     @Test
-    public void findArticlesByUserTopicInterest(){
-        Topic topicJava=Topic.builder()
+    public void findArticlesByUserTopicInterest() {
+        Topic topicJava = Topic.builder()
                 .id(1L)
                 .name("java")
                 .build();
-        Topic topicLife=Topic.builder()
+        Topic topicLife = Topic.builder()
                 .id(2L)
                 .name("life")
                 .build();
-        Set<Topic> topicOfInterest=new HashSet<>();
+        Set<Topic> topicOfInterest = new HashSet<>();
         topicOfInterest.add(topicLife);
         topicOfInterest.add(topicJava);
-        User user=User.builder()
+        User user = User.builder()
                 .topicsOfInterest(topicOfInterest)
                 .build();
-        Article article1=Article.builder()
+        Article article1 = Article.builder()
                 .topics(Set.of(topicJava))
                 .build();
-        Article article2=Article.builder()
-                .topics(Set.of(topicLife,topicJava))
+        Article article2 = Article.builder()
+                .topics(Set.of(topicLife, topicJava))
                 .build();
-        Pageable pageable= PageRequest.of(0,10);
+        Pageable pageable = PageRequest.of(0, 10);
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
-        when(articleRepository.findArticlesByTopicsId(topicJava.getId(),pageable))
-                .thenReturn(new PageImpl<>(List.of(article1,article2),pageable,2));
-        when(articleRepository.findArticlesByTopicsId(topicLife.getId(),pageable))
-                .thenReturn(new PageImpl<>(List.of(article2),pageable,1));
-        Page<Article> articlesUserTopicsOfInterest=articleService.findArticlesByUserTopicOfInterest(10,0);
+        when(articleRepository.findArticlesByTopicsId(topicJava.getId(), pageable))
+                .thenReturn(new PageImpl<>(List.of(article1, article2), pageable, 2));
+        when(articleRepository.findArticlesByTopicsId(topicLife.getId(), pageable))
+                .thenReturn(new PageImpl<>(List.of(article2), pageable, 1));
+        Page<Article> articlesUserTopicsOfInterest = articleService.findArticlesByUserTopicOfInterest(10, 0);
 
         Assertions.assertThat(articlesUserTopicsOfInterest.getTotalElements()).isEqualTo(2);
 
     }
 
 
-
-
     @Test
     public void updateArticleById_UserRole_Test() {
-        User user=new User();
+        User user = new User();
         user.getRoles().add(Role.USER);
         long articleId = 1L;
         Article articleToUpdate = Article.builder()
@@ -140,7 +139,7 @@ public class ArticleServiceTest {
 
     @Test
     public void updateArticleById_AdminRole_Test() {
-        User user=new User();
+        User user = new User();
         user.getRoles().add(Role.ADMIN);
         long articleId = 1L;
         Article articleToUpdate = Article.builder()
@@ -160,7 +159,7 @@ public class ArticleServiceTest {
 
     @Test
     public void updateArticleById_ThrowException_Test() {
-        User user=new User();
+        User user = new User();
         user.getRoles().add(Role.USER);
         long articleId = 1L;
         Article articleToUpdate = Article.builder()

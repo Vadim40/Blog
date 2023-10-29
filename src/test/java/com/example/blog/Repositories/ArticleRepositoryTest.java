@@ -130,40 +130,40 @@ class ArticleRepositoryTest {
     }
 
     @Test
-    void findArticlesByTopic(){
-        Topic topic1=topicRepository.save(Topic.builder()
+    void findArticlesByTopic() {
+        Topic topic1 = topicRepository.save(Topic.builder()
                 .articles(new HashSet<>())
                 .name("java")
                 .build());
-        Topic topic2=topicRepository.save(Topic.builder()
+        Topic topic2 = topicRepository.save(Topic.builder()
                 .articles(new HashSet<>())
                 .name("job")
                 .build());
-        Topic topic3=topicRepository.save(Topic.builder()
+        Topic topic3 = topicRepository.save(Topic.builder()
                 .articles(new HashSet<>())
                 .name("study")
                 .build());
 
-        Set<Topic> topics1=new HashSet<>();
+        Set<Topic> topics1 = new HashSet<>();
         topics1.add(topic1);
         topics1.add(topic2);
-        Set<Topic> topics2=new HashSet<>();
+        Set<Topic> topics2 = new HashSet<>();
         topics2.add(topic1);
         topics2.add(topic3);
-        Article article1=Article.builder()
+        Article article1 = Article.builder()
                 .topics(topics1)
                 .published(true)
                 .build();
-        Article article2=Article.builder()
+        Article article2 = Article.builder()
                 .topics(topics2)
                 .published(true)
                 .build();
         articleRepository.save(article1);
         articleRepository.save(article2);
 
-        Pageable pageable=PageRequest.of(0,3);
-        Page<Article> pageOfJavaTopic=articleRepository.findArticlesByTopicsId(topic1.getId(),pageable);
-        Page<Article> pageOfJobTopic=articleRepository.findArticlesByTopicsId(topic2.getId(),pageable);
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<Article> pageOfJavaTopic = articleRepository.findArticlesByTopicsId(topic1.getId(), pageable);
+        Page<Article> pageOfJobTopic = articleRepository.findArticlesByTopicsId(topic2.getId(), pageable);
 
         Assertions.assertThat(pageOfJavaTopic.getTotalElements()).isEqualTo(2);
         Assertions.assertThat(pageOfJobTopic.getTotalElements()).isEqualTo(1);

@@ -8,8 +8,9 @@ import java.util.Set;
 
 @Repository
 public interface TopicRepository extends JpaRepository<Topic, Long> {
-    Set<Topic> findTopicsByNameContaining(String name);
+    Set<Topic> findTopicsByNameIgnoreCaseContaining(String name);
 
+    Topic findTopicByName(String name);
 
-    boolean existsByName(String name);
+    boolean existsByNameIgnoreCase(String name);
 }
