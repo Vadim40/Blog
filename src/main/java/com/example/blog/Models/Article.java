@@ -1,7 +1,6 @@
 package com.example.blog.Models;
 
 
-import com.example.blog.Models.Enums.Category;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +10,9 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -55,6 +56,6 @@ public class Article {
     private User user;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
-    private Set<Image> images=new HashSet<>();
+    private List<Image> images=new ArrayList<>();
 
 }

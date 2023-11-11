@@ -1,5 +1,6 @@
 package com.example.blog.Services.Interfaces;
 
+import com.example.blog.Models.Image;
 import com.example.blog.Models.User;
 
 import java.util.Set;
@@ -17,7 +18,7 @@ public interface UserService {
 
     void unsubscribe(long userToUnsubscribeId);
 
-
+    void setAvatar(Image image);
 
     User findUserById(long userId);
 

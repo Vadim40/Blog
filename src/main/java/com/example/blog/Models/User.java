@@ -88,7 +88,7 @@
         private Set<Comment> comments=new HashSet<>();
 
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-        private Image image;
+        private Image avatar;
         @ElementCollection
         @CollectionTable(
                 name = "user_liked_articles",

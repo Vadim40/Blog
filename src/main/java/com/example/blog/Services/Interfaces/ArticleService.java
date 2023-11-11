@@ -1,6 +1,7 @@
 package com.example.blog.Services.Interfaces;
 
 import com.example.blog.Models.Article;
+import com.example.blog.Models.Image;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
@@ -29,6 +30,8 @@ public interface ArticleService {
     Article publishArticle(Article article);
 
     Article  saveArticle(Article article);
+
+    void saveImageToArticle(Image image, long articleId);
 
     Article updateArticleById(Article article, long articleId);
     void addToSavedUserArticles(long articleId);

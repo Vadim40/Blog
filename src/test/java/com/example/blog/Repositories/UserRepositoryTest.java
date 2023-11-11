@@ -38,16 +38,18 @@ class UserRepositoryTest {
 
         Article article1 = articleRepository.save(Article.builder()
                 .text("Article 1")
+                .published(true)
                 .user(user)
                 .build());
 
         Article article2 = articleRepository.save(Article.builder()
                 .text("Article 2")
+                .published(true)
                 .user(user)
                 .build());
-        User foundUser1=userRepository.findUserByArticlesId(article1.getId()).orElseThrow(
+        User foundUser1 = userRepository.findUserByArticlesId(article1.getId()).orElseThrow(
                 () -> new UserNotFoundException("User not Found"));
-        User foundUser2=userRepository.findUserByArticlesId(article2.getId()).orElseThrow(
+        User foundUser2 = userRepository.findUserByArticlesId(article2.getId()).orElseThrow(
                 () -> new UserNotFoundException("User not Found"));
 
         Assertions.assertThat(foundUser1).isEqualTo(foundUser2);
@@ -65,18 +67,18 @@ class UserRepositoryTest {
                 .build();
         userRepository.save(user);
 
-        Comment comment1=commentRepository.save(Comment.builder()
+        Comment comment1 = commentRepository.save(Comment.builder()
                 .likes(10)
                 .user(user)
                 .build());
 
-        Comment comment2=commentRepository.save(Comment.builder()
+        Comment comment2 = commentRepository.save(Comment.builder()
                 .likes(10)
                 .user(user)
                 .build());
-        User foundUser1=userRepository.findUserByCommentsId(comment1.getId()).orElseThrow(
+        User foundUser1 = userRepository.findUserByCommentsId(comment1.getId()).orElseThrow(
                 () -> new UserNotFoundException("User not Found"));
-        User foundUser2=userRepository.findUserByCommentsId(comment2.getId()).orElseThrow(
+        User foundUser2 = userRepository.findUserByCommentsId(comment2.getId()).orElseThrow(
                 () -> new UserNotFoundException("User not Found"));
         Assertions.assertThat(foundUser1).isEqualTo(foundUser2);
         Assertions.assertThat(foundUser1.getEmail()).isEqualTo(user.getEmail());

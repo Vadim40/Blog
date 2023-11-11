@@ -114,9 +114,11 @@ public class ArticleServiceImpl implements ArticleService {
         article.setCreationDate(LocalDate.now());
         return articleRepository.save(article);
     }
-
+    @Override
     public void saveImageToArticle(Image image, long articleId) {
         Article article = findArticleById(articleId);
+        String text =article.getText().concat(" [image:"+article.getImages().size()+1+"] ");
+        article.setText(text);
         article.getImages().add(image);
         articleRepository.save(article);
     }

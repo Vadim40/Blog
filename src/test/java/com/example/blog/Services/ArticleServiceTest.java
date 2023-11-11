@@ -19,10 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -220,7 +217,7 @@ public class ArticleServiceTest {
     void saveImageToArticle() {
         Article article = Article.builder()
                 .text("some")
-                .images(new HashSet<>())
+                .images(new ArrayList<>())
                 .build();
         Image image = Image.builder()
                 .imageData(new byte[]{1, 2, 3, 5})

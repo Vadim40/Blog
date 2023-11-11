@@ -68,10 +68,10 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
+    @Override
     public void setAvatar(Image image) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        authenticatedUser.setImage(image);
+        authenticatedUser.setAvatar(image);
         userRepository.save(authenticatedUser);
     }
 
