@@ -10,6 +10,7 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -20,11 +21,9 @@ class CommentRepositoryTest {
     private ArticleRepository articleRepository;
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private CommentRepository commentRepository;
     @Test
-    void findCommentsByArticleId() {
+    void findCommentsByParentCommentIsNullArticleId() {
         Article article =articleRepository.save( Article.builder()
                 .text("Article")
                 .build());
@@ -40,32 +39,7 @@ class CommentRepositoryTest {
         commentRepository.save(comment1);
         commentRepository.save(comment2);
 
-        Set<Comment> foundComments=commentRepository.findCommentsByArticleId(article.getId());
-        Assertions.assertThat(foundComments).isNotEmpty();
-        Assertions.assertThat(foundComments.size()).isGreaterThan(1);
-    }
-
-    @Test
-    void findCommentsByUserId() {
-        User user = userRepository.save(User.builder()
-                .firstname("John")
-                .lastname("Doe")
-                .email("john@example.com")
-                .selfDescription("Test user")
-                .build());
-
-
-        Comment comment1=Comment.builder()
-                .likes(10)
-                .user(user)
-                .build();
-        Comment comment2=Comment.builder()
-                .likes(20)
-                .user(user)
-                .build();
-        commentRepository.save(comment1);
-        commentRepository.save(comment2);
-        Set<Comment> foundComments=commentRepository.findCommentsByUserId(user.getId());
+        List<Comment> foundComments=commentRepository.findCommentsByParentCommentIsNullAndArticleId(article.getId());
         Assertions.assertThat(foundComments).isNotEmpty();
         Assertions.assertThat(foundComments.size()).isGreaterThan(1);
     }
@@ -85,7 +59,7 @@ class CommentRepositoryTest {
                 .build();
         commentRepository.save(comment1);
         commentRepository.save(comment2);
-        Set<Comment> foundComments=commentRepository.findCommentsByParentCommentId(parentComment.getId());
+        List<Comment> foundComments=commentRepository.findCommentsByParentCommentId(parentComment.getId());
         Assertions.assertThat(foundComments).isNotEmpty();
         Assertions.assertThat(foundComments.size()).isGreaterThan(1);
     }

@@ -16,7 +16,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     Page<Article> findArticlesByTitleContainingIgnoreCase(String title, Pageable pageable);
 
-//    Page<Article> findArticlesByTopicsId(long topicId, Pageable pageable);
+
 
     Page<Article> findArticlesByTopicsName(String name, Pageable pageable);
 

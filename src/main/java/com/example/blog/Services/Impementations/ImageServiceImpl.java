@@ -1,4 +1,4 @@
-package com.example.blog.Services;
+package com.example.blog.Services.Impementations;
 
 import com.example.blog.Excteptions.ImageNotFoundException;
 import com.example.blog.Models.Image;
@@ -6,6 +6,7 @@ import com.example.blog.Repositories.ImageRepository;
 import com.example.blog.Services.Interfaces.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @RequiredArgsConstructor

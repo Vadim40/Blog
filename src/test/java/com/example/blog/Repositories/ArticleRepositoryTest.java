@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,11 +28,10 @@ class ArticleRepositoryTest {
     private ArticleRepository articleRepository;
 
     @Autowired
-    TopicRepository topicRepository;
+    private TopicRepository topicRepository;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private CommentRepository commentRepository;
+
 
     @Test
     public void testSaveArticle() {
@@ -45,65 +45,6 @@ class ArticleRepositoryTest {
 
     }
 
-    @Test
-    public void testFindArticlesByUserId() {
-
-        User user = userRepository.save(User.builder()
-                .firstname("John")
-                .lastname("Doe")
-                .email("john@example.com")
-                .selfDescription("Test user")
-                .build());
-
-
-        Article article1 = Article.builder()
-                .text("Article 1")
-                .user(user)
-                .published(true)
-                .build();
-
-        Article article2 = Article.builder()
-                .text("Article 2")
-                .published(true)
-                .user(user)
-                .build();
-
-        articleRepository.save(article1);
-        articleRepository.save(article2);
-
-
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Article> articlesPage = articleRepository.findArticlesByUserId(user.getId(), pageable);
-
-
-        List<Article> articles = articlesPage.getContent();
-        Assertions.assertThat(articles).isNotEmpty();
-
-    }
-
-    @Test
-    void findArticleByCommentsId() {
-        Article article = Article.builder()
-                .text("Article")
-                .published(true)
-                .build();
-        articleRepository.save(article);
-        Comment comment1 = commentRepository.save(Comment.builder()
-                .likes(10)
-                .article(article)
-                .build());
-        Comment comment2 = commentRepository.save(Comment.builder()
-                .likes(20)
-                .article(article)
-                .build());
-        Article foundArticle1 = articleRepository.findArticleByCommentsId(comment1.getId());
-        Article foundArticle2 = articleRepository.findArticleByCommentsId(comment2.getId());
-
-
-        Assertions.assertThat(foundArticle1).isNotNull();
-        Assertions.assertThat(foundArticle1).isEqualTo(foundArticle2);
-        Assertions.assertThat(comment1.getId()).isNotEqualTo(comment2.getId());
-    }
 
 
     @Test
@@ -130,43 +71,53 @@ class ArticleRepositoryTest {
     }
 
     @Test
-    void findArticlesByTopic() {
-        Topic topic1 = topicRepository.save(Topic.builder()
-                .articles(new HashSet<>())
-                .name("java")
-                .build());
-        Topic topic2 = topicRepository.save(Topic.builder()
-                .articles(new HashSet<>())
-                .name("job")
-                .build());
-        Topic topic3 = topicRepository.save(Topic.builder()
-                .articles(new HashSet<>())
-                .name("study")
+    void findArticleByUsername() {
+        User user = userRepository.save(User.builder()
+                .username("bad wolves")
                 .build());
 
-        Set<Topic> topics1 = new HashSet<>();
-        topics1.add(topic1);
-        topics1.add(topic2);
-        Set<Topic> topics2 = new HashSet<>();
-        topics2.add(topic1);
-        topics2.add(topic3);
+
         Article article1 = Article.builder()
-                .topics(topics1)
+                .text("Article 1")
+                .user(user)
                 .published(true)
                 .build();
+
         Article article2 = Article.builder()
-                .topics(topics2)
+                .text("Article 2")
+                .published(true)
+                .user(user)
+                .build();
+
+        articleRepository.save(article1);
+        articleRepository.save(article2);
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<Article> articles = articleRepository.findArticlesByUser_Username(user.getUsername(), pageable);
+
+        Assertions.assertThat(articles.getTotalElements()).isEqualTo(2);
+    }
+
+    @Test
+    public void findArticleByTopicName() {
+
+        Topic topic=topicRepository.save(new Topic());
+        topic.setName("Java");
+        Article article1 = Article.builder()
+                .topics(new HashSet<>(Arrays.asList(topic)))
+                .text("Article 1")
+                .published(true)
+                .build();
+
+        Article article2 = Article.builder()
+                .text("Article 2")
+                .topics(new HashSet<>(Arrays.asList(topic)))
                 .published(true)
                 .build();
         articleRepository.save(article1);
         articleRepository.save(article2);
-
         Pageable pageable = PageRequest.of(0, 3);
-        Page<Article> pageOfJavaTopic = articleRepository.findArticlesByTopicsId(topic1.getId(), pageable);
-        Page<Article> pageOfJobTopic = articleRepository.findArticlesByTopicsId(topic2.getId(), pageable);
-
-        Assertions.assertThat(pageOfJavaTopic.getTotalElements()).isEqualTo(2);
-        Assertions.assertThat(pageOfJobTopic.getTotalElements()).isEqualTo(1);
+        Page<Article> articles = articleRepository.findArticlesByTopicsName("Java",pageable);
+        Assertions.assertThat(articles.getTotalElements()).isEqualTo(2);
     }
 
 }

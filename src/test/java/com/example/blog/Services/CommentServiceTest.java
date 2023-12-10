@@ -6,6 +6,9 @@ import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.CommentRepository;
 import com.example.blog.Repositories.UserRepository;
+import com.example.blog.Services.Impementations.ArticleServiceImpl;
+import com.example.blog.Services.Impementations.CommentServiceImpl;
+import com.example.blog.Services.Impementations.CustomUserDetailsService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,8 +61,8 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void putLikeTest() {
-        User user=new User();
+    public void toggleLike_Test() {
+        User user = new User();
         Comment comment = Comment.builder()
                 .text("comment")
                 .likes(9)
@@ -68,27 +71,9 @@ public class CommentServiceTest {
         when(commentRepository.save(comment)).thenReturn(comment);
         when(commentRepository.findById(anyLong())).thenReturn(Optional.of(comment));
         when(userRepository.save(any(User.class))).thenReturn(user);
-        commentService.putLike(1L);
+        commentService.toggleLikeStatus(1L);
 
         Assertions.assertThat(comment.getLikes()).isEqualTo(10);
-    }
-    @Test
-    public void putLike_ThrowException_Test() {
-
-        Comment comment = Comment.builder()
-                .id(1L)
-                .text("comment")
-                .likes(9)
-                .build();
-       User user=new User();
-       user.getLikedComments().add(comment.getId());
-        when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
-        when(commentRepository.findById(anyLong())).thenReturn(Optional.of(comment));
-
-        Assertions.assertThatThrownBy(()-> commentService.putLike(1L)).isInstanceOf(IllegalArgumentException.class);
-
-
-
     }
 
     @Test
@@ -114,60 +99,61 @@ public class CommentServiceTest {
         when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(comment));
 
 
-        Assertions.assertThatThrownBy(()-> commentService.addCommentToParentComment(newComment, 1L)).isInstanceOf(IllegalArgumentException.class);
+        Assertions.assertThatThrownBy(() -> commentService.addCommentToParentComment(newComment, 1L)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void updateCommentById_ByUserRole_Test(){
-        User user=new User();
+    public void updateCommentById_ByUserRole_Test() {
+        User user = new User();
         user.getRoles().add(Role.USER);
-        long commentId= 1L;
+        long commentId = 1L;
         Comment commentToUpdate = Comment.builder()
                 .id(commentId)
                 .text("comment")
                 .build();
-        Comment comment=new Comment();
+        Comment comment = new Comment();
         user.getComments().add(commentToUpdate);
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
         when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(commentToUpdate));
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
-        Comment commentToCheck=commentService.updateCommentById(comment,commentId);
+        Comment commentToCheck = commentService.updateCommentById(comment, commentId);
 
         Assertions.assertThat(commentToCheck.getId()).isEqualTo(commentId);
     }
+
     @Test
-    public void updateCommentById_ByAdminRole_Test(){
-        User user=new User();
+    public void updateCommentById_ByAdminRole_Test() {
+        User user = new User();
         user.getRoles().add(Role.ADMIN);
-        long commentId= 1L;
+        long commentId = 1L;
         Comment commentToUpdate = Comment.builder()
                 .id(commentId)
                 .text("comment")
                 .build();
-        Comment comment=new Comment();
+        Comment comment = new Comment();
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
         when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(commentToUpdate));
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
-        Comment commentToCheck=commentService.updateCommentById(comment,commentId);
+        Comment commentToCheck = commentService.updateCommentById(comment, commentId);
 
         Assertions.assertThat(commentToCheck.getId()).isEqualTo(commentId);
     }
 
     @Test
-    public void updateCommentById_ThrowException_Test(){
-        User user=new User();
+    public void updateCommentById_ThrowException_Test() {
+        User user = new User();
         user.getRoles().add(Role.USER);
-        long commentId= 1L;
+        long commentId = 1L;
         Comment commentToUpdate = Comment.builder()
                 .id(commentId)
                 .text("comment")
                 .build();
-        Comment comment=new Comment();
+        Comment comment = new Comment();
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
         when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(commentToUpdate));
-        Assertions.assertThatThrownBy(()-> commentService.updateCommentById(comment,commentId)).isInstanceOf(AccessDeniedException.class);
+        Assertions.assertThatThrownBy(() -> commentService.updateCommentById(comment, commentId)).isInstanceOf(AccessDeniedException.class);
 
 
     }

@@ -3,7 +3,7 @@ package com.example.blog.Controllers;
 import com.example.blog.Mappers.ArticleMapper;
 import com.example.blog.Models.Article;
 import com.example.blog.Models.DTOs.ArticleDTO;
-import com.example.blog.Services.ArticleServiceImpl;
+import com.example.blog.Services.Impementations.ArticleServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -107,7 +107,7 @@ public class ArticleController {
     @PostMapping("/save")
     public String saveArticle(
             @ModelAttribute @Valid ArticleDTO articleDTO, BindingResult bindingResult, Model model) {
-        if(bindingResult.hasErrors()){
+        if (bindingResult.hasErrors()) {
             model.addAttribute("validationErrors", bindingResult.getAllErrors());
             return "some";
         }
@@ -122,7 +122,7 @@ public class ArticleController {
             @ModelAttribute @Valid ArticleDTO articleDTO,
             BindingResult bindingResult,
             Model model) {
-        if(bindingResult.hasErrors()){
+        if (bindingResult.hasErrors()) {
             model.addAttribute("validationErrors", bindingResult.getAllErrors());
             return "some";
         }
@@ -130,7 +130,6 @@ public class ArticleController {
         articleService.updateArticleById(article, articleId);
         return "redirect:/articles/" + articleId;
     }
-
 
 
     @PutMapping("/{articleId}/toggle-favorite")

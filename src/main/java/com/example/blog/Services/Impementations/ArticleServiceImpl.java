@@ -1,4 +1,4 @@
-package com.example.blog.Services;
+package com.example.blog.Services.Impementations;
 
 import com.example.blog.Excteptions.ArticleNotFoundException;
 import com.example.blog.Models.Article;
@@ -32,7 +32,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Page<Article> findArticlesByUser_Username(String username, int pageSize, int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return articleRepository.findArticlesByUser_Username(username,pageable);
+        return articleRepository.findArticlesByUser_Username(username, pageable);
     }
 
     @Override
@@ -40,7 +40,6 @@ public class ArticleServiceImpl implements ArticleService {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
         return authenticationUser.getFavoriteArticles();
     }
-
 
 
     @Override
@@ -104,8 +103,10 @@ public class ArticleServiceImpl implements ArticleService {
 
 
     @Override
+    @Transactional
     public Article saveArticle(Article article) {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
+        authenticationUser.getArticles().add(article);
         article.setUser(authenticationUser);
         article.setCreationDate(LocalDate.now());
         return articleRepository.save(article);
@@ -115,7 +116,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Transactional
     public Article saveImageToArticle(Image image, long articleId) {
         Article article = findArticleById(articleId);
-        String text = article.getText(  ).concat(" [image:" + article.getImages().size() + 1 + "] ");
+        String text = article.getText().concat(" [image:" + article.getImages().size() + 1 + "] ");
         article.setText(text);
         image.setArticle(article);
         article.getImages().add(image);
@@ -165,14 +166,14 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public boolean isArticleFavorite(long articleId) {
-        User authenticatedUser =customUserDetailsService.getAuthenticatedUser();
-        Article article=findArticleById(articleId);
+        User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
+        Article article = findArticleById(articleId);
         return authenticatedUser.getFavoriteArticles().contains(article);
     }
 
     @Override
     public boolean isArticleLiked(long articleId) {
-        User authenticatedUser =customUserDetailsService.getAuthenticatedUser();
+        User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         return authenticatedUser.getLikedArticles().contains(articleId);
     }
 

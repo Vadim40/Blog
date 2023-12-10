@@ -1,4 +1,4 @@
-package com.example.blog.Services;
+package com.example.blog.Services.Impementations;
 
 import com.example.blog.Excteptions.CommentNotFoundException;
 import com.example.blog.Models.Article;
@@ -37,7 +37,6 @@ public class CommentServiceImpl implements CommentService {
                 .sorted(Comparator.comparingInt(Comment::getLikes).reversed())
                 .collect(Collectors.toList());
     }
-
 
 
     @Override
@@ -112,7 +111,7 @@ public class CommentServiceImpl implements CommentService {
         if (authenticatedUser.getLikedComments().contains(commentId)) {
             authenticatedUser.getLikedComments().remove(commentId);
             comment.setLikes(comment.getLikes() - 1);
-        }else {
+        } else {
             authenticatedUser.getLikedComments().add(commentId);
             comment.setLikes(comment.getLikes() + 1);
         }

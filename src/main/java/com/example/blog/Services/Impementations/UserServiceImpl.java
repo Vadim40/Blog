@@ -1,4 +1,4 @@
-package com.example.blog.Services;
+package com.example.blog.Services.Impementations;
 
 import com.example.blog.Excteptions.UserNotFoundException;
 import com.example.blog.Models.Enums.Role;
@@ -39,8 +39,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<User> findUsersByUsernameIsContainingIgnoreCase(String username, int pageSize, int pageNumber) {
-        Pageable pageable= PageRequest.of(pageNumber,pageSize);
-        return userRepository.findUsersByUsernameIsContainingIgnoreCase(username,pageable);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return userRepository.findUsersByUsernameIsContainingIgnoreCase(username, pageable);
     }
 
     @Override
@@ -105,8 +105,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isSubscribedToUser(String username) {
-        User authenticatedUser =customUserDetailsService.getAuthenticatedUser();
-        User user=findUserByUsername(username);
+        User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
+        User user = findUserByUsername(username);
         return authenticatedUser.getFollowing().contains(user);
     }
 

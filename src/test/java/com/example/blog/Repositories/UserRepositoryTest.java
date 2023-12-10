@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
@@ -82,5 +85,17 @@ class UserRepositoryTest {
                 () -> new UserNotFoundException("User not Found"));
         Assertions.assertThat(foundUser1).isEqualTo(foundUser2);
         Assertions.assertThat(foundUser1.getEmail()).isEqualTo(user.getEmail());
+    }
+    @Test
+    public void findUsersByUsername(){
+        User user1 =userRepository.save(User.builder()
+                .username("around")
+                .build());
+        User user2 =userRepository.save(User.builder()
+                .username("Arron")
+                .build());
+        Pageable pageable=PageRequest.of(0,3);
+        Page<User> users=userRepository.findUsersByUsernameIsContainingIgnoreCase("ar",pageable);
+        Assertions.assertThat(users.getTotalElements()).isEqualTo(2);
     }
 }

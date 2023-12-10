@@ -1,4 +1,4 @@
-package com.example.blog.Services;
+package com.example.blog.Services.Impementations;
 
 import com.example.blog.Excteptions.TopicAlreadyExists;
 import com.example.blog.Excteptions.TopicNotFoundException;
@@ -31,7 +31,7 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public Set<Topic> findAllTopics() {
-        return (Set.copyOf( topicRepository.findAll()));
+        return (Set.copyOf(topicRepository.findAll()));
     }
 
     @Override
