@@ -3,6 +3,7 @@ package com.example.blog.Models.DTOs;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 
@@ -25,6 +26,7 @@ public class UserDTO {
     private String selfDescription;
     private LocalDate creationDate;
     @NotBlank(message = "password should be no empty")
+    @Size(min = 8, max = 255, message = "Password must be at least 8  characters")
     private String password;
     @NotBlank(message = "username should be no empty")
     private String username;

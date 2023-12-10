@@ -1,5 +1,6 @@
 package com.example.blog.Models.DTOs;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,8 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ImageDTO {
-    private  long id;
-    private  String name;
+    private long id;
+    @Max(value = 50,message = "no more than 50 characters")
+    private String name;
     @Size(max = 1000)
     private byte[] imageData;
 }

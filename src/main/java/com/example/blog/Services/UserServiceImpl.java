@@ -7,6 +7,9 @@ import com.example.blog.Models.User;
 import com.example.blog.Repositories.UserRepository;
 import com.example.blog.Services.Interfaces.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ public class UserServiceImpl implements UserService {
     private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
 
+
     @Override
     public User findUserByArticleId(long articleId) {
         return userRepository.findUserByArticlesId(articleId).orElseThrow(
@@ -34,51 +38,54 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Set<User> findFollowers(long userId) {
-        User user = findUserById(userId);
+    public Page<User> findUsersByUsernameIsContainingIgnoreCase(String username, int pageSize, int pageNumber) {
+        Pageable pageable= PageRequest.of(pageNumber,pageSize);
+        return userRepository.findUsersByUsernameIsContainingIgnoreCase(username,pageable);
+    }
+
+    @Override
+    public Set<User> findFollowers(String username) {
+        User user = findUserByUsername(username);
         return user.getFollowers();
     }
 
     @Override
-    public Set<User> findSubscriptions(long userId) {
-        User user = findUserById(userId);
-        return user.getSubscriptions();
+    public Set<User> findFollowing(String username) {
+        User user = findUserByUsername(username);
+        return user.getFollowing();
     }
 
     @Override
-    public void subscribe(long userToSubscribeId) {
+    public void toggleFollowStatus(long userToSubscribeId) {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
         User userToSubscribe = findUserById(userToSubscribeId);
-        if (authenticationUser.getSubscriptions().contains(userToSubscribe)) {
-            throw new IllegalArgumentException("You are already subscribed to this user.");
+        if (authenticationUser.getFollowing().contains(userToSubscribe)) {
+            authenticationUser.getFollowing().remove(userToSubscribe);
+        } else {
+            authenticationUser.getFollowing().add(userToSubscribe);
         }
-        authenticationUser.getSubscriptions().add(userToSubscribe);
-        userRepository.save(authenticationUser);
-    }
-
-    @Override
-    public void unsubscribe(long userToUnsubscribeId) {
-        User authenticationUser = customUserDetailsService.getAuthenticatedUser();
-        User userToUnsubscribe = findUserById(userToUnsubscribeId);
-        if (!authenticationUser.getSubscriptions().contains(userToUnsubscribe)) {
-            throw new IllegalArgumentException("You are not subscribed to the user you are trying to unsubscribe from.");
-        }
-        authenticationUser.getSubscriptions().remove(userToUnsubscribe);
         userRepository.save(authenticationUser);
     }
 
 
     @Override
-    public void setAvatar(Image image) {
+    public User setAvatar(Image image) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
+        image.setUser(authenticatedUser);
         authenticatedUser.setAvatar(image);
-        userRepository.save(authenticatedUser);
+        return userRepository.save(authenticatedUser);
     }
 
     @Override
     public User findUserById(long userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new UserNotFoundException("User not found."));
+    }
+
+    @Override
+    public User findUserByUsername(String username) {
+        return userRepository.findUserByUsername(username).orElseThrow(
+                () -> new UserNotFoundException("User no found"));
     }
 
     @Override
@@ -94,6 +101,13 @@ public class UserServiceImpl implements UserService {
         checkUserAccess(userId);
         user.setId(userId);
         return userRepository.save(user);
+    }
+
+    @Override
+    public boolean isSubscribedToUser(String username) {
+        User authenticatedUser =customUserDetailsService.getAuthenticatedUser();
+        User user=findUserByUsername(username);
+        return authenticatedUser.getFollowing().contains(user);
     }
 
     @Override

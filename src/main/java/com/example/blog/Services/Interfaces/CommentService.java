@@ -2,14 +2,12 @@ package com.example.blog.Services.Interfaces;
 
 import com.example.blog.Models.Comment;
 
-import java.util.Set;
+import java.util.List;
 
 public interface CommentService {
-    Set<Comment> findCommentsByArticleId(long articleId);
+    List<Comment> findParentCommentsByArticleIdOrderingByLikes(long articleId);
 
-    Set<Comment> findCommentsByUserId(long userId);
-
-    Set<Comment> findCommentsByParentCommentId(long parentCommentID);
+    List<Comment> findCommentsByParentCommentIdOrderingByLikes(long parentCommentID);
 
     Comment findCommentById(long commentId);
 
@@ -21,7 +19,8 @@ public interface CommentService {
 
     void deleteCommentById(long id);
 
-    void putLike(long commentId);
+    void toggleLikeStatus(long commentId);
 
-    void removeLike(long commentId);
+    boolean isCommentLiked(long commentId);
+
 }

@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,17 +27,25 @@ public class CommentServiceImpl implements CommentService {
     private final CustomUserDetailsService customUserDetailsService;
 
     @Override
-    public Set<Comment> findCommentsByArticleId(long articleId) {
-        return commentRepository.findCommentsByArticleId(articleId);
+    public List<Comment> findParentCommentsByArticleIdOrderingByLikes(long articleId) {
+        List<Comment> comments = commentRepository.findCommentsByParentCommentIsNullAndArticleId(articleId);
+        return sortCommentsByLikes(comments);
     }
+
+    private List<Comment> sortCommentsByLikes(List<Comment> comments) {
+        return comments.stream()
+                .sorted(Comparator.comparingInt(Comment::getLikes).reversed())
+                .collect(Collectors.toList());
+    }
+
+
+
     @Override
-    public Set<Comment> findCommentsByUserId(long userId) {
-        return commentRepository.findCommentsByUserId(userId);
+    public List<Comment> findCommentsByParentCommentIdOrderingByLikes(long parentCommentID) {
+        List<Comment> comments = commentRepository.findCommentsByParentCommentId(parentCommentID);
+        return sortCommentsByLikes(comments);
     }
-    @Override
-    public Set<Comment> findCommentsByParentCommentId(long parentCommentID) {
-        return commentRepository.findCommentsByParentCommentId(parentCommentID);
-    }
+
     @Override
     public Comment findCommentById(long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
@@ -43,9 +53,12 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public Comment addCommentToArticle(Comment comment, long articleId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Article article = articleService.findArticleById(articleId);
+        authenticatedUser.getComments().add(comment);
+        article.getComments().add(comment);
         comment.setUser(authenticatedUser);
         comment.setArticle(article);
         comment.setCreationDate(LocalDate.now());
@@ -53,24 +66,30 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public Comment addCommentToParentComment(Comment comment, long parentCommentId) {
-        User authenticatedUser=customUserDetailsService.getAuthenticatedUser();
-        Comment parentComment=findCommentById(parentCommentId);
-        if(parentComment.getParentComment()!=null){
+        User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
+        Comment parentComment = findCommentById(parentCommentId);
+        Article article = articleService.findArticleById(parentComment.getArticle().getId());
+        if (parentComment.getParentComment() != null) {
             throw new IllegalArgumentException("Nested comments are not allowed.");
         }
+        authenticatedUser.getComments().add(comment);
+        article.getComments().add(comment);
         comment.setUser(authenticatedUser);
         comment.setArticle(parentComment.getArticle());
         comment.setParentComment(parentComment);
         comment.setCreationDate(LocalDate.now());
         return commentRepository.save(comment);
     }
+
     @Override
     public Comment updateCommentById(Comment comment, long commentId) {
         checkCommentAccess(commentId);
         comment.setId(commentId);
         return commentRepository.save(comment);
     }
+
     @Override
     public void deleteCommentById(long commentId) {
         checkCommentAccess(commentId);
@@ -84,30 +103,26 @@ public class CommentServiceImpl implements CommentService {
             throw new AccessDeniedException("You don't have permission to perform this action on the comment");
         }
     }
+
     @Override
     @Transactional
-    public void putLike(long commentId) {
+    public void toggleLikeStatus(long commentId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Comment comment = findCommentById(commentId);
         if (authenticatedUser.getLikedComments().contains(commentId)) {
-            throw new IllegalArgumentException("You have already  liked this comment");
+            authenticatedUser.getLikedComments().remove(commentId);
+            comment.setLikes(comment.getLikes() - 1);
+        }else {
+            authenticatedUser.getLikedComments().add(commentId);
+            comment.setLikes(comment.getLikes() + 1);
         }
-        authenticatedUser.getLikedComments().add(commentId);
-        comment.setLikes(comment.getLikes() + 1);
         commentRepository.save(comment);
         userRepository.save(authenticatedUser);
     }
+
     @Override
-    @Transactional
-    public void removeLike(long commentId) {
+    public boolean isCommentLiked(long commentId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        Comment comment = findCommentById(commentId);
-        if (!authenticatedUser.getLikedComments().contains(commentId)) {
-            throw new IllegalArgumentException("You have not  liked this comment");
-        }
-        authenticatedUser.getLikedComments().remove(commentId);
-        comment.setLikes(comment.getLikes() - 1);
-        commentRepository.save(comment);
-        userRepository.save(authenticatedUser);
+        return authenticatedUser.getLikedComments().contains(commentId);
     }
 }

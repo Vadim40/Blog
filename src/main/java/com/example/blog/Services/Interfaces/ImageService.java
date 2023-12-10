@@ -7,10 +7,10 @@ import java.util.List;
 
 public interface ImageService {
 
-    Image saveImage(MultipartFile file);
+    Image saveImage(Image image);
     Image findImageById(long imageId);
     List<Image> findImagesByArticleId(long articleId);
     Image findAvatarByUserId(long userId);
-    Image updateImage(MultipartFile file, long imageId);
+    Image updateImage(Image image, long imageId);
     void deleteImage(long imageId);
 }

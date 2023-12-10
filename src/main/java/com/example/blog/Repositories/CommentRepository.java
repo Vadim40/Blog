@@ -5,11 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    Set<Comment> findCommentsByArticleId(long articleId);
-    Set<Comment> findCommentsByUserId(long userId);
-    Set<Comment> findCommentsByParentCommentId(long parentCommentId);
+    List<Comment> findCommentsByParentCommentIsNullAndArticleId(long articleId);
+    List<Comment> findCommentsByParentCommentId(long parentCommentId);
+
  }

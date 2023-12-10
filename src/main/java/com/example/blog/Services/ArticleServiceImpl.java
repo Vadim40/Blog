@@ -15,6 +15,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -27,51 +28,49 @@ public class ArticleServiceImpl implements ArticleService {
     private final CustomUserDetailsService customUserDetailsService;
     private final UserRepository userRepository;
 
+
     @Override
-    public Page<Article> findArticlesByUserId(long userId, int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
-        return articleRepository.findArticlesByUserId(userId, pageable);
+    public Page<Article> findArticlesByUser_Username(String username, int pageSize, int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return articleRepository.findArticlesByUser_Username(username,pageable);
     }
 
     @Override
-    public Set<Article> findSavedArticlesByAuthenticationUser() {
+    public Set<Article> findFavoriteArticlesByAuthenticationUser() {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
-        return authenticationUser.getSavedArticles();
+        return authenticationUser.getFavoriteArticles();
+    }
+
+
+
+    @Override
+    public Page<Article> findArticlesByTopicName(String topicName, int pageSize, int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return articleRepository.findArticlesByTopicsName(topicName, pageable);
     }
 
     @Override
-    public Page<Article> findArticlesByTopic(long topicId, int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
-        return articleRepository.findArticlesByTopicsId(topicId, pageable);
-    }
-
-    @Override
-    public Page<Article> findArticlesByUserTopicOfInterest(int size, int page) {
+    public Page<Article> findArticlesByUserTopicsOfInterest(int pageSize, int pageNumber) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Set<Article> articles = new HashSet<>();
         for (Topic topic : authenticatedUser.getTopicsOfInterest()) {
-            articles.addAll(findArticlesByTopic(topic.getId(), size, page).getContent());
+            articles.addAll(findArticlesByTopicName(topic.getName(), pageSize, pageNumber).getContent());
         }
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return new PageImpl<>(List.copyOf(articles), pageable, articles.size());
     }
 
 
     @Override
-    public Page<Article> findArticlesByTitleIsContainingIgnoreCaseString(String title, int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<Article> findArticlesByTitleIsContainingIgnoreCaseString(String title, int pageSize, int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return articleRepository.findArticlesByTitleContainingIgnoreCase(title, pageable);
     }
 
     @Override
-    public Page<Article> findArticlesBySorting(int size, int page, Sort.Direction direction, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, direction, sortBy);
+    public Page<Article> findArticlesBySorting(int pageSize, int pageNumber, Sort.Direction direction, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
         return articleRepository.findAll(pageable);
-    }
-
-    @Override
-    public Article findArticleByCommentId(long commentId) {
-        return articleRepository.findArticleByCommentsId(commentId);
     }
 
     @Override
@@ -80,32 +79,29 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Article publishArticle(Article article) {
+    public Article publishArticle(long articleId) {
+        Article article = findArticleById(articleId);
+        if (article.isPublished()) {
+            throw new IllegalArgumentException("You are already saved0 this user.");
+        }
         article.setPublished(true);
         return articleRepository.save(article);
     }
 
     @Override
-    public void addToSavedUserArticles(long articleId) {
+    @Transactional
+    public Article toggleFavoriteStatus(long articleId) {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
         Article article = findArticleById(articleId);
-        if (authenticationUser.getSavedArticles().contains(article)) {
-            throw new IllegalArgumentException("You are already saved this user.");
+        if (authenticationUser.getFavoriteArticles().contains(article)) {
+            authenticationUser.getFavoriteArticles().remove(article);
+        } else {
+            authenticationUser.getFavoriteArticles().add(article);
         }
-        authenticationUser.getSavedArticles().add(article);
         userRepository.save(authenticationUser);
+        return articleRepository.save(article);
     }
 
-    @Override
-    public void removeFromSavedUserArticles(long articleId) {
-        User authenticationUser = customUserDetailsService.getAuthenticatedUser();
-        Article article = findArticleById(articleId);
-        if (!authenticationUser.getSavedArticles().contains(article)) {
-            throw new IllegalArgumentException("You are not saved this article you are trying to remove.");
-        }
-        authenticationUser.getSavedArticles().remove(article);
-        userRepository.save(authenticationUser);
-    }
 
     @Override
     public Article saveArticle(Article article) {
@@ -114,13 +110,16 @@ public class ArticleServiceImpl implements ArticleService {
         article.setCreationDate(LocalDate.now());
         return articleRepository.save(article);
     }
+
     @Override
-    public void saveImageToArticle(Image image, long articleId) {
+    @Transactional
+    public Article saveImageToArticle(Image image, long articleId) {
         Article article = findArticleById(articleId);
-        String text =article.getText().concat(" [image:"+article.getImages().size()+1+"] ");
+        String text = article.getText(  ).concat(" [image:" + article.getImages().size() + 1 + "] ");
         article.setText(text);
+        image.setArticle(article);
         article.getImages().add(image);
-        articleRepository.save(article);
+        return articleRepository.save(article);
     }
 
     @Override
@@ -149,29 +148,32 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional
-    public void putLike(long articleId) {
+    public Article toggleLikeStatus(long articleId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Article article = findArticleById(articleId);
         if (authenticatedUser.getLikedArticles().contains(articleId)) {
-            throw new IllegalArgumentException("You have already  liked this article");
+            article.setLikes(article.getLikes() - 1);
+            authenticatedUser.getLikedArticles().remove(articleId);
+        } else {
+            article.setLikes(article.getLikes() + 1);
+            authenticatedUser.getLikedArticles().add(articleId);
         }
-        article.setLikes(article.getLikes() + 1);
-        authenticatedUser.getLikedArticles().add(articleId);
+
         userRepository.save(authenticatedUser);
-        articleRepository.save(article);
+        return articleRepository.save(article);
     }
 
     @Override
-    @Transactional
-    public void removeLike(long articleId) {
-        User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        Article article = findArticleById(articleId);
-        if (!authenticatedUser.getLikedArticles().contains(articleId)) {
-            throw new IllegalArgumentException("You have not liked this article");
-        }
-        article.setLikes(article.getLikes() - 1);
-        authenticatedUser.getLikedArticles().remove(articleId);
-        userRepository.save(authenticatedUser);
-        articleRepository.save(article);
+    public boolean isArticleFavorite(long articleId) {
+        User authenticatedUser =customUserDetailsService.getAuthenticatedUser();
+        Article article=findArticleById(articleId);
+        return authenticatedUser.getFavoriteArticles().contains(article);
     }
+
+    @Override
+    public boolean isArticleLiked(long articleId) {
+        User authenticatedUser =customUserDetailsService.getAuthenticatedUser();
+        return authenticatedUser.getLikedArticles().contains(articleId);
+    }
+
 }

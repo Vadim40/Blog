@@ -27,12 +27,12 @@ public class Image {
     private String type;
 
     private boolean deleted = false;
-    //@Lob
+
     @Column(name = "image_data", columnDefinition = "bytea")
     private byte[] imageData;
 
     @ManyToOne
-    @JoinColumn(name = "article_id")
+    @JoinColumn(name = "article_id" )
     private Article article;
     @OneToOne
     @JoinColumn(name = "user_id")

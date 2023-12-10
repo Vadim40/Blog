@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ArticleMapper {
-    public ArticleDTO toDTO(Article article){
+    public ArticleDTO mapToDTO(Article article){
 
         return ArticleDTO.builder()
                 .id(article.getId())
@@ -16,7 +16,7 @@ public class ArticleMapper {
                 .text(article.getText())
                 .build();
     }
-    public Article toEntity(ArticleDTO articleDTO){
+    public Article mapToEntity(ArticleDTO articleDTO){
         return Article.builder()
                 .id(articleDTO.getId())
                 .creationDate(articleDTO.getCreationDate())

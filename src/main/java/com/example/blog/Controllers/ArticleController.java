@@ -12,7 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 
 @Controller
@@ -23,19 +22,19 @@ public class ArticleController {
     private final ArticleMapper articleMapper;
 
 
-    @GetMapping("/topic/{topicId}")
+    @GetMapping("/topic/{topicName}")
     public String findArticlesByTopic(
-            @PathVariable long topicId,
+            @PathVariable String topicName,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "1") int pageNumber,
             Model model) {
-        Page<Article> articles = articleService.findArticlesByTopic(topicId, pageSize, pageNumber);
+        Page<Article> articles = articleService.findArticlesByTopicName(topicName, pageSize, pageNumber);
         Page<ArticleDTO> articleDTOS = articles.map(articleMapper::mapToDTO);
         model.addAttribute("articles", articleDTOS);
         return "articlesByTopic";
     }
 
-    @GetMapping("/{username}")
+    @GetMapping("/@{username}")
     public String findArticlesByUser(
             @PathVariable String username,
             @RequestParam(defaultValue = "20") int pageSize,
@@ -53,7 +52,7 @@ public class ArticleController {
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "1") int pageNumber,
             Model model) {
-        Page<Article> articles = articleService.findArticlesByUserTopicOfInterest(pageSize, pageNumber);
+        Page<Article> articles = articleService.findArticlesByUserTopicsOfInterest(pageSize, pageNumber);
         Page<ArticleDTO> articleDTOS = articles.map(articleMapper::mapToDTO);
         model.addAttribute("articles", articleDTOS);
         return "articleByInterests";
@@ -74,7 +73,7 @@ public class ArticleController {
         return "articlesSorted";
     }
 
-    @GetMapping()
+    @GetMapping("/search-title")
     public String findArticlesByTitleIsContainingIgnoreCase(
             @RequestParam String title,
             @RequestParam(defaultValue = "20") int pageSize,

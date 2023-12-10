@@ -2,9 +2,11 @@ package com.example.blog.Mappers;
 
 import com.example.blog.Models.DTOs.UserDTO;
 import com.example.blog.Models.User;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserMapper {
-    public UserDTO toDTO(User user){
+    public UserDTO mapToDTO(User user){
         return UserDTO.builder()
                 .id(user.getId())
                 .creationDate(user.getCreationDate())
@@ -16,7 +18,7 @@ public class UserMapper {
                 .username(user.getUsername())
                 .build();
     }
-    public User toEntity(UserDTO userDTO){
+    public User mapToEntity(UserDTO userDTO){
         return User.builder()
                 .id(userDTO.getId())
                 .creationDate(userDTO.getCreationDate())

@@ -65,24 +65,24 @@
         private Set<Role> roles=new HashSet<>();
         @ManyToMany
         @JoinTable(
-                name = "user_subscriptions",
+                name = "user_following",
                 joinColumns = @JoinColumn(name = "user_id"),
                 inverseJoinColumns = @JoinColumn(name = "subscription_id")
         )
-        private Set<User> subscriptions=new HashSet<>();
+        private Set<User> following =new HashSet<>();
 
-        @ManyToMany(mappedBy = "subscriptions")
+        @ManyToMany(mappedBy = "following")
         private Set<User> followers=new HashSet<>();
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
         private Set<Article> articles=new HashSet<>();
 
         @ManyToMany
         @JoinTable(
-                name = "user_saved_articles",
+                name = "user_favorite_articles",
                 joinColumns = @JoinColumn(name = "user_id"),
                 inverseJoinColumns = @JoinColumn(name = "article_id")
         )
-        private Set<Article> savedArticles=new HashSet<>();
+        private Set<Article> favoriteArticles =new HashSet<>();
 
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
         private Set<Comment> comments=new HashSet<>();
