@@ -73,7 +73,7 @@ public class ArticleController {
         return "articlesSorted";
     }
 
-    @GetMapping("/search-title")
+    @GetMapping("/search")
     public String findArticlesByTitleIsContainingIgnoreCase(
             @RequestParam String title,
             @RequestParam(defaultValue = "20") int pageSize,
