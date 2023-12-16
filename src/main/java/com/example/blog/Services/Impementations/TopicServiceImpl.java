@@ -20,13 +20,19 @@ public class TopicServiceImpl implements TopicService {
     private final CustomUserDetailsService customUserDetailsService;
 
     @Override
-    public Set<Topic> findTopicsByNameIgnoreCaseContaining(String name) {
-        return topicRepository.findTopicsByNameIgnoreCaseContaining(name);
+    public Set<Topic> findTopicsByNameIgnoreCaseContaining(String topicName) {
+        return topicRepository.findTopicsByNameIgnoreCaseContaining(topicName);
     }
 
     @Override
-    public Topic findTopicByName(String name) {
-        return topicRepository.findTopicByName(name);
+    public int findTopicFollowersCount(String topicName) {
+        Topic topic=topicRepository.findTopicByName(topicName);
+        return topic.getInterestedUsers().size();
+    }
+
+    @Override
+    public Topic findTopicByName(String topicName) {
+        return topicRepository.findTopicByName(topicName);
     }
 
     @Override

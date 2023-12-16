@@ -1,156 +1,210 @@
 package com.example.blog.Controllers;
 
 import com.example.blog.Mappers.ArticleMapper;
+import com.example.blog.Mappers.UserMapper;
 import com.example.blog.Models.Article;
 import com.example.blog.Models.DTOs.ArticleDTO;
+import com.example.blog.Models.DTOs.ArticleViewDTO;
+import com.example.blog.Models.DTOs.UserDTO;
 import com.example.blog.Services.Impementations.ArticleServiceImpl;
+import com.example.blog.Services.Impementations.TopicServiceImpl;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 
-@Controller
-@RequestMapping("/articles")
+@RestController
+@RequestMapping("/api/articles")
 @RequiredArgsConstructor
 public class ArticleController {
     private final ArticleServiceImpl articleService;
+    private final TopicServiceImpl topicService;
     private final ArticleMapper articleMapper;
-
+    private final UserMapper userMapper;
 
     @GetMapping("/topic/{topicName}")
-    public String findArticlesByTopic(
+    public ResponseEntity<Object> findArticlesByTopic(
             @PathVariable String topicName,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "1") int pageNumber,
-            Model model) {
-        Page<Article> articles = articleService.findArticlesByTopicName(topicName, pageSize, pageNumber);
-        Page<ArticleDTO> articleDTOS = articles.map(articleMapper::mapToDTO);
-        model.addAttribute("articles", articleDTOS);
-        return "articlesByTopic";
+            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+            @RequestParam(defaultValue = "creationDate") String sortBy) {
+        @AllArgsConstructor
+        @Getter
+        class CustomApiResponse {
+            private final Page<ArticleViewDTO> articles;
+            private final long topicSubscribers;
+        }
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Page<Article> articles = articleService.findPublishedArticlesByTopicName(topicName, pageable);
+        if (articles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        CustomApiResponse customApiResponse = new CustomApiResponse(articleViewDTOPage,
+                topicService.findTopicFollowersCount(topicName));
+        return new ResponseEntity<>(customApiResponse, HttpStatus.OK);
     }
 
-    @GetMapping("/@{username}")
-    public String findArticlesByUser(
+
+    @GetMapping("/user/{username}")
+    public ResponseEntity<Page<ArticleViewDTO>> findArticlesByUser(
             @PathVariable String username,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "1") int pageNumber,
-            Model model) {
-        Page<Article> articles = articleService.findArticlesByUser_Username(username, pageSize, pageNumber);
-        Page<ArticleDTO> articleDTOS = articles.map(articleMapper::mapToDTO);
-        model.addAttribute("articles", articleDTOS);
-        return "articleByUser";
+            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+            @RequestParam(defaultValue = "creationDate") String sortBy) {
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Page<Article> articles = articleService.findPublishedArticlesByUserUsername(username, pageable);
+        if (articles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
 
-
-    @GetMapping("/interests")
-    public String findArticlesByUserTopicOfInterest(
-            @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            Model model) {
-        Page<Article> articles = articleService.findArticlesByUserTopicsOfInterest(pageSize, pageNumber);
-        Page<ArticleDTO> articleDTOS = articles.map(articleMapper::mapToDTO);
-        model.addAttribute("articles", articleDTOS);
-        return "articleByInterests";
-    }
-
-    @GetMapping("/sorted")
-    public String findArticlesBySorting(
+    @GetMapping("/favorites")
+    public ResponseEntity<Page<ArticleViewDTO>> findFavoriteArticles(
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "1") int pageNumber,
             @RequestParam(defaultValue = "ASC") Sort.Direction direction,
-            @RequestParam(defaultValue = "creationDate") String sortBy,
-            Model model) {
-
-        Page<Article> articles = articleService.findArticlesBySorting(pageSize, pageNumber, direction, sortBy);
-        Page<ArticleDTO> articleDTOs = articles.map(articleMapper::mapToDTO);
-        model.addAttribute("articles", articleDTOs);
-
-        return "articlesSorted";
+            @RequestParam(defaultValue = "creationDate") String sortBy) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Page<Article> articles = articleService.findPublishedFavoriteArticlesByAuthenticationUser(pageable);
+        if (articles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
+    }
+    @GetMapping("/draft")
+    public ResponseEntity<Page<ArticleViewDTO>> findDraftArticles(
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(defaultValue = "1") int pageNumber,
+            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+            @RequestParam(defaultValue = "creationDate") String sortBy) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Page<Article> articles = articleService.findNotPublishedArticlesByAuthenticationUser(pageable);
+        if (articles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
 
+
+
+    @GetMapping("/interests")
+    public ResponseEntity<Page<ArticleViewDTO>> findArticlesByUserTopicOfInterest(
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(defaultValue = "1") int pageNumber,
+            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+            @RequestParam(defaultValue = "creationDate") String sortBy) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Page<Article> articles = articleService.findPublishedArticlesByUserTopicsOfInterest(pageable);
+        if (articles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
+    }
+
+
     @GetMapping("/search")
-    public String findArticlesByTitleIsContainingIgnoreCase(
+    public ResponseEntity<Page<ArticleViewDTO>> findArticlesByTitleIsContainingIgnoreCase(
             @RequestParam String title,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "1") int pageNumber,
-            Model model) {
-        Page<Article> articles = articleService.findArticlesByTitleIsContainingIgnoreCaseString(title, pageSize, pageNumber);
-        Page<ArticleDTO> articleDTOS = articles.map(articleMapper::mapToDTO);
-        model.addAttribute("articles", articleDTOS);
-        return "articleByInterests";
+            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+            @RequestParam(defaultValue = "creationDate") String sortBy) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Page<Article> articles = articleService.findPublishedArticlesByTitleIsContainingIgnoreCaseString(title, pageable);
+        if (articles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
 
     @GetMapping("/{articleId}")
-    public String findArticleById(
-            @PathVariable long articleId,
-            Model model) {
-        Article article = articleService.findArticleById(articleId);
-        ArticleDTO articleDTO = articleMapper.mapToDTO(article);
-        model.addAttribute("article", articleDTO);
-        model.addAttribute("articleIsLiked", articleService.isArticleLiked(articleId));
-        model.addAttribute("articleIsFavorite", articleService.isArticleFavorite(articleId));
-        return "show";
+    public ResponseEntity<ArticleViewDTO> findArticleById(@PathVariable long articleId) {
+        Article article = articleService.findPublishedArticleById(articleId);
+        ArticleViewDTO articleViewDTO = mapArticleToArticleViewDTO(article);
+        return new ResponseEntity<>(articleViewDTO, HttpStatus.OK);
     }
+
 
     @PutMapping("/{articleId}/publish")
-    public String publishArticle(
-            @PathVariable long articleId) {
+    public ResponseEntity<Void> publishArticle(@PathVariable long articleId) {
         articleService.publishArticle(articleId);
-        return "redirect:/articles/" + articleId;
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/save")
-    public String saveArticle(
-            @ModelAttribute @Valid ArticleDTO articleDTO, BindingResult bindingResult, Model model) {
+    @PostMapping("/create")
+    public ResponseEntity<Object> saveArticle(@RequestBody @Valid ArticleDTO articleDTO,
+                                              BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("validationErrors", bindingResult.getAllErrors());
-            return "some";
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
         Article article = articleMapper.mapToEntity(articleDTO);
         article = articleService.saveArticle(article);
-        return "redirect:/articles/" + article.getId();
+        ArticleDTO savedArticleDTO = articleMapper.mapToDTO(article);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedArticleDTO);
     }
 
     @PutMapping("/{articleId}/update")
-    public String updateArticle(
+    public ResponseEntity<Object> updateArticle(
             @PathVariable long articleId,
-            @ModelAttribute @Valid ArticleDTO articleDTO,
-            BindingResult bindingResult,
-            Model model) {
+            @RequestBody @Valid ArticleDTO articleDTO,
+            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("validationErrors", bindingResult.getAllErrors());
-            return "some";
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
         Article article = articleMapper.mapToEntity(articleDTO);
         articleService.updateArticleById(article, articleId);
-        return "redirect:/articles/" + articleId;
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
     @PutMapping("/{articleId}/toggle-favorite")
-    public String toggleFavoriteStatus(
-            @PathVariable long articleId) {
+    public ResponseEntity<Void> toggleFavoriteStatus(@PathVariable long articleId) {
         articleService.toggleFavoriteStatus(articleId);
-        return "redirect:/articles/" + articleId;
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{articleId}/toggle-like")
-    public String toggleLikeStatus(
-            @PathVariable long articleId) {
+    public ResponseEntity<Void> toggleLikeStatus(@PathVariable long articleId) {
         articleService.toggleLikeStatus(articleId);
-        return "redirect:/articles/" + articleId;
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{articleId}/delete")
-    public String deleteArticle(
-            @PathVariable long articleId) {
+    public ResponseEntity<Void> deleteArticle(@PathVariable long articleId) {
         articleService.deleteArticleById(articleId);
-        return "delete";
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    private ArticleViewDTO mapArticleToArticleViewDTO(Article article) {
+        ArticleDTO articleDTO = articleMapper.mapToDTO(article);
+        UserDTO userDTO = userMapper.mapToDTO(article.getUser());
+
+        ArticleViewDTO articleViewDTO = new ArticleViewDTO();
+        articleViewDTO.setArticleDTO(articleDTO);
+        articleViewDTO.setUserDTO(userDTO);
+        if (SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+            articleViewDTO.setFavorite(articleService.isArticleFavorite(article.getId()));
+            articleViewDTO.setLiked(articleService.isArticleLiked(article.getId()));
+        }
+        return articleViewDTO;
+    }
 }

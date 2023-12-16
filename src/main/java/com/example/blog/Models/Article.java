@@ -22,7 +22,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE articles SET deleted = true WHERE id=?")
-@Where(clause = "deleted=false and published=true")
+@Where(clause = "deleted=false")
 public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -2,10 +2,14 @@ package com.example.blog.Mappers;
 
 import com.example.blog.Models.DTOs.UserDTO;
 import com.example.blog.Models.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class UserMapper {
+    private final ImageMapper imageMapper;
+
     public UserDTO mapToDTO(User user){
         return UserDTO.builder()
                 .id(user.getId())
@@ -16,6 +20,7 @@ public class UserMapper {
                 .lastname(user.getLastname())
                 .selfDescription(user.getSelfDescription())
                 .username(user.getUsername())
+                .avatar(imageMapper.mapToDTO(user.getAvatar()))
                 .build();
     }
     public User mapToEntity(UserDTO userDTO){
@@ -28,6 +33,7 @@ public class UserMapper {
                 .lastname(userDTO.getLastname())
                 .selfDescription(userDTO.getSelfDescription())
                 .username(userDTO.getUsername())
+                .avatar(imageMapper.mapToEntity(userDTO.getAvatar()))
                 .build();
     }
 }

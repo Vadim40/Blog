@@ -30,5 +30,6 @@ public class UserDTO {
     private String password;
     @NotBlank(message = "username should be no empty")
     private String username;
+    private ImageDTO avatar;
 
 }

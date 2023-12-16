@@ -3,29 +3,23 @@ package com.example.blog.Services.Interfaces;
 import com.example.blog.Models.Article;
 import com.example.blog.Models.Image;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
-
-
-import java.util.Set;
+import org.springframework.data.domain.Pageable;
 
 public interface ArticleService {
 
 
-    Page<Article> findArticlesByUser_Username(String username, int pageSize, int pageNumber);
+    Page<Article> findPublishedArticlesByUserUsername(String username, Pageable pageable);
 
-    Set<Article> findFavoriteArticlesByAuthenticationUser();
+    Page<Article> findPublishedFavoriteArticlesByAuthenticationUser(Pageable pageable);
 
-    Page<Article> findArticlesByTopicName(String topicName, int pageSize, int pageNumber);
+    Page<Article> findPublishedArticlesByTopicName(String topicName, Pageable pageable);
 
-    Page<Article> findArticlesByUserTopicsOfInterest(int pageSize, int pageNumber);
+    Page<Article> findPublishedArticlesByUserTopicsOfInterest(Pageable pageable);
 
-    Page<Article> findArticlesByTitleIsContainingIgnoreCaseString(String title, int pageSize, int pageNumber);
+    Page<Article> findPublishedArticlesByTitleIsContainingIgnoreCaseString(String title, Pageable pageable);
+    Page<Article> findNotPublishedArticlesByAuthenticationUser(Pageable pageable);
 
-    Page<Article> findArticlesBySorting(int pageSize, int pageNumber, Sort.Direction direction, String sortBy);
-
-
-
-    Article findArticleById(long articleId);
+    Article findPublishedArticleById(long articleId);
 
     Article publishArticle(long articleId);
 

@@ -55,7 +55,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public Comment addCommentToArticle(Comment comment, long articleId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        Article article = articleService.findArticleById(articleId);
+        Article article = articleService.findPublishedArticleById(articleId);
         authenticatedUser.getComments().add(comment);
         article.getComments().add(comment);
         comment.setUser(authenticatedUser);
@@ -69,7 +69,7 @@ public class CommentServiceImpl implements CommentService {
     public Comment addCommentToParentComment(Comment comment, long parentCommentId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Comment parentComment = findCommentById(parentCommentId);
-        Article article = articleService.findArticleById(parentComment.getArticle().getId());
+        Article article = articleService.findPublishedArticleById(parentComment.getArticle().getId());
         if (parentComment.getParentComment() != null) {
             throw new IllegalArgumentException("Nested comments are not allowed.");
         }
