@@ -1,7 +1,6 @@
 package com.example.blog.Repositories;
 
 import com.example.blog.Models.Article;
-import com.example.blog.Models.Comment;
 import com.example.blog.Models.Topic;
 import com.example.blog.Models.User;
 import org.assertj.core.api.Assertions;
@@ -15,10 +14,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 
-import java.util.Arrays;
+
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 @DataJpaTest
@@ -63,9 +61,9 @@ class ArticleRepositoryTest {
         articleRepository.save(article2);
         Pageable pageable = PageRequest.of(0, 3);
         Page<Article> articles1 = articleRepository.
-                findArticlesByTitleContainingIgnoreCase("Java", pageable);
+                findArticlesByPublishedIsTrueAndTitleContainingIgnoreCase("Java", pageable);
         Page<Article> articles2 = articleRepository.
-                findArticlesByTitleContainingIgnoreCase("something", pageable);
+                findArticlesByPublishedIsTrueAndTitleContainingIgnoreCase("something", pageable);
         Assertions.assertThat(articles1.getTotalElements()).isEqualTo(1);
         Assertions.assertThat(articles2.getTotalElements()).isEqualTo(2);
     }
@@ -92,7 +90,7 @@ class ArticleRepositoryTest {
         articleRepository.save(article1);
         articleRepository.save(article2);
         Pageable pageable = PageRequest.of(0, 3);
-        Page<Article> articles = articleRepository.findArticlesByUser_Username(user.getUsername(), pageable);
+        Page<Article> articles = articleRepository.findArticlesByPublishedIsTrueAndUserUsername(user.getUsername(), pageable);
 
         Assertions.assertThat(articles.getTotalElements()).isEqualTo(2);
     }
@@ -103,21 +101,47 @@ class ArticleRepositoryTest {
         Topic topic=topicRepository.save(new Topic());
         topic.setName("Java");
         Article article1 = Article.builder()
-                .topics(new HashSet<>(Arrays.asList(topic)))
+                .topics(new HashSet<>(List.of(topic)))
                 .text("Article 1")
                 .published(true)
                 .build();
 
         Article article2 = Article.builder()
                 .text("Article 2")
-                .topics(new HashSet<>(Arrays.asList(topic)))
+                .topics(new HashSet<>(List.of(topic)))
                 .published(true)
                 .build();
         articleRepository.save(article1);
         articleRepository.save(article2);
         Pageable pageable = PageRequest.of(0, 3);
-        Page<Article> articles = articleRepository.findArticlesByTopicsName("Java",pageable);
+        Page<Article> articles = articleRepository.findArticlesByPublishedIsTrueAndTopicsName("Java",pageable);
         Assertions.assertThat(articles.getTotalElements()).isEqualTo(2);
+    }
+    @Test
+    public void findArticleByPublishedIsFalse() {
+
+        User user = userRepository.save(User.builder()
+                .username("bad wolves")
+                .build());
+
+
+        Article article1 = Article.builder()
+                .text("Article 1")
+                .user(user)
+                .published(true)
+                .build();
+
+        Article article2 = Article.builder()
+                .text("Article 2")
+                .published(false)
+                .user(user)
+                .build();
+
+        articleRepository.save(article1);
+        articleRepository.save(article2);
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<Article> articles = articleRepository.findArticlesByPublishedIsFalseAndUserUsername(user.getUsername(), pageable);
+        Assertions.assertThat(articles.getTotalElements()).isEqualTo(1);
     }
 
 }

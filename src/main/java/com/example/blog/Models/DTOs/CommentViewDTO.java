@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class CommentViewDTO {
-    private CommentDTO articleDTO;
+    private CommentDTO commentDTO;
     private UserDTO userDTO;
     private boolean isLiked=false;
 }
