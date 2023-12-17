@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class UserViewDTO {
-    private UserDTO userDTODTO;
+    private UserDTO userDTO;
     private boolean isFollowed;
 }

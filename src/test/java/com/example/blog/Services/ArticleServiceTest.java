@@ -49,7 +49,7 @@ public class ArticleServiceTest {
                 .text("some")
                 .build();
         Article article2 = Article.builder()
-                .text("some")
+                .text("some2")
                 .build();
         Set<Article> articles = new HashSet<>();
         articles.add(article1);
@@ -59,16 +59,17 @@ public class ArticleServiceTest {
                 .favoriteArticles(articles)
                 .build();
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<Article> savedArticles = articleService.findPublishedFavoriteArticlesByAuthenticationUser(pageable);
 
-        Set<Article> savedArticles = articleService.findFavoriteArticlesByAuthenticationUser();
-
-        Assertions.assertThat(savedArticles).isEqualTo(articles);
+        Assertions.assertThat(savedArticles.getTotalElements()).isEqualTo(2);
     }
 
 
     @Test
     public void saveArticle() {
         User user = User.builder()
+                .articles(new HashSet<>())
                 .username("valentine")
                 .build();
         Article article = Article.builder()
@@ -116,11 +117,11 @@ public class ArticleServiceTest {
                 .build();
         Pageable pageable = PageRequest.of(0, 10);
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
-        when(articleRepository.findArticlesByTopicsName(topicJava.getName(), pageable))
+        when(articleRepository.findArticlesByPublishedIsTrueAndTopicsName(topicJava.getName(), pageable))
                 .thenReturn(new PageImpl<>(List.of(article1, article2), pageable, 2));
-        when(articleRepository.findArticlesByTopicsName(topicLife.getName(), pageable))
+        when(articleRepository.findArticlesByPublishedIsTrueAndTopicsName(topicLife.getName(), pageable))
                 .thenReturn(new PageImpl<>(List.of(article2), pageable, 1));
-        Page<Article> articlesUserTopicsOfInterest = articleService.findArticlesByUserTopicsOfInterest(10, 0);
+        Page<Article> articlesUserTopicsOfInterest = articleService.findPublishedArticlesByUserTopicsOfInterest(pageable);
 
         Assertions.assertThat(articlesUserTopicsOfInterest.getTotalElements()).isEqualTo(2);
 
@@ -201,15 +202,15 @@ public class ArticleServiceTest {
                 .build();
         long articleId2 = 2L;
         Article article2 = Article.builder()
-                .id(articleId1)
+                .id(articleId2)
                 .likes(9)
                 .text("some")
                 .build();
         user.getLikedArticles().add(articleId2);
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
-        when(articleRepository.findById(articleId1)).thenReturn(Optional.of(article1));
+        when(articleRepository.findArticleByIdAndPublishedIsTrue(articleId1)).thenReturn(Optional.of(article1));
         when(articleRepository.save(article1)).thenReturn(article1);
-        when(articleRepository.findById(articleId2)).thenReturn(Optional.of(article2));
+        when(articleRepository.findArticleByIdAndPublishedIsTrue(articleId2)).thenReturn(Optional.of(article2));
         when(articleRepository.save(article2)).thenReturn(article2);
         when(userRepository.save(any(User.class))).thenReturn(user);
         articleService.toggleLikeStatus(articleId1);

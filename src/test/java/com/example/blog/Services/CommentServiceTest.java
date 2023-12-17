@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
+import java.util.HashSet;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -42,6 +43,7 @@ public class CommentServiceTest {
     @Test
     public void addCommentToArticle() {
         User user = User.builder()
+                .comments(new HashSet<>())
                 .username("crossfade")
                 .build();
         Article article = new Article();
@@ -51,10 +53,9 @@ public class CommentServiceTest {
 
         when(commentRepository.save(comment)).thenReturn(comment);
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
-        when(articleService.findArticleById(anyLong())).thenReturn(article);
+        when(articleService.findPublishedArticleById(anyLong())).thenReturn(article);
 
         commentService.addCommentToArticle(comment, 1L);
-        System.out.println(article.getComments());
 
         Assertions.assertThat(comment.getUser()).isEqualTo(user);
         Assertions.assertThat(comment.getArticle()).isEqualTo(article);

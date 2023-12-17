@@ -82,10 +82,15 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    public Article findArticleById(long articleId) {
+       return articleRepository.findById(articleId).orElseThrow(() -> new ArticleNotFoundException("Article not found."));
+    }
+
+    @Override
     public Article publishArticle(long articleId) {
-        Article article = findPublishedArticleById(articleId);
+        Article article = findArticleById(articleId);
         if (article.isPublished()) {
-            throw new IllegalArgumentException("You are already saved0 this user.");
+            throw new IllegalArgumentException("You are already saved this user.");
         }
         article.setPublished(true);
         return articleRepository.save(article);
@@ -119,7 +124,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional
     public Article saveImageToArticle(Image image, long articleId) {
-        Article article = findPublishedArticleById(articleId);
+        Article article = findArticleById(articleId);
         String text = article.getText().concat(" [image:" + article.getImages().size() + 1 + "] ");
         article.setText(text);
         image.setArticle(article);
@@ -130,7 +135,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Article updateArticleById(Article article, long articleId) {
         checkArticleAccess(articleId);
-        if (findPublishedArticleById(articleId).isPublished()) {
+        if (findArticleById(articleId).isPublished()) {
             throw new UnsupportedOperationException("You dont have permission to update this article");
         }
         article.setId(articleId);
@@ -145,7 +150,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     private void checkArticleAccess(long articleId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        Article articleToCheck = findPublishedArticleById(articleId);
+        Article articleToCheck = findArticleById(articleId);
         if (!authenticatedUser.getRoles().contains(Role.ADMIN) && !authenticatedUser.getArticles().contains(articleToCheck)) {
             throw new AccessDeniedException("You don't have permission to perform this action on this article");
         }

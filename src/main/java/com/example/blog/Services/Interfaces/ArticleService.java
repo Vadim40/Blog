@@ -20,6 +20,7 @@ public interface ArticleService {
     Page<Article> findNotPublishedArticlesByAuthenticationUser(Pageable pageable);
 
     Article findPublishedArticleById(long articleId);
+    Article findArticleById(long articleId);
 
     Article publishArticle(long articleId);
 
