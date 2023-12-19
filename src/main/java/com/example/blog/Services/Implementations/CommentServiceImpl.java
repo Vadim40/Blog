@@ -9,6 +9,10 @@ import com.example.blog.Repositories.CommentRepository;
 import com.example.blog.Repositories.UserRepository;
 import com.example.blog.Services.Interfaces.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,22 +31,18 @@ public class CommentServiceImpl implements CommentService {
     private final CustomUserDetailsService customUserDetailsService;
 
     @Override
-    public List<Comment> findParentCommentsByArticleIdOrderingByLikes(long articleId) {
-        List<Comment> comments = commentRepository.findCommentsByParentCommentIsNullAndArticleId(articleId);
-        return sortCommentsByLikes(comments);
-    }
-
-    private List<Comment> sortCommentsByLikes(List<Comment> comments) {
-        return comments.stream()
-                .sorted(Comparator.comparingInt(Comment::getLikes).reversed())
-                .collect(Collectors.toList());
+    public Page<Comment> findParentCommentsByArticleIdOrderingByLikes(long articleId, Pageable pageable) {
+        Sort sort = Sort.by(Sort.Order.desc("likes"));
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        return commentRepository.findCommentsByParentCommentIsNullAndArticleId(articleId, sortedPageable);
     }
 
 
     @Override
-    public List<Comment> findCommentsByParentCommentIdOrderingByLikes(long parentCommentID) {
-        List<Comment> comments = commentRepository.findCommentsByParentCommentId(parentCommentID);
-        return sortCommentsByLikes(comments);
+    public Page<Comment> findCommentsByParentCommentIdOrderingByLikes(long parentCommentID, Pageable pageable) {
+        Sort sort = Sort.by(Sort.Order.desc("likes"));
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        return commentRepository.findCommentsByParentCommentId(parentCommentID, sortedPageable);
     }
 
     @Override

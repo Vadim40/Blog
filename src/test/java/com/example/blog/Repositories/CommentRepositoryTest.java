@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Set;
@@ -38,10 +41,10 @@ class CommentRepositoryTest {
                 .build();
         commentRepository.save(comment1);
         commentRepository.save(comment2);
-
-        List<Comment> foundComments=commentRepository.findCommentsByParentCommentIsNullAndArticleId(article.getId());
+        Pageable pageable= PageRequest.of(0,2);
+        Page<Comment> foundComments=commentRepository.findCommentsByParentCommentIsNullAndArticleId(article.getId(),pageable);
         Assertions.assertThat(foundComments).isNotEmpty();
-        Assertions.assertThat(foundComments.size()).isGreaterThan(1);
+        Assertions.assertThat(foundComments.getTotalElements()).isGreaterThan(1);
     }
 
     @Test
@@ -59,8 +62,9 @@ class CommentRepositoryTest {
                 .build();
         commentRepository.save(comment1);
         commentRepository.save(comment2);
-        List<Comment> foundComments=commentRepository.findCommentsByParentCommentId(parentComment.getId());
+        Pageable pageable= PageRequest.of(0,2);
+        Page<Comment> foundComments=commentRepository.findCommentsByParentCommentId(parentComment.getId(),pageable);
         Assertions.assertThat(foundComments).isNotEmpty();
-        Assertions.assertThat(foundComments.size()).isGreaterThan(1);
+        Assertions.assertThat(foundComments.getTotalElements()).isGreaterThan(1);
     }
 }

@@ -1,13 +1,15 @@
 package com.example.blog.Services.Interfaces;
 
 import com.example.blog.Models.Comment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface CommentService {
-    List<Comment> findParentCommentsByArticleIdOrderingByLikes(long articleId);
+    Page<Comment> findParentCommentsByArticleIdOrderingByLikes(long articleId, Pageable pageable);
 
-    List<Comment> findCommentsByParentCommentIdOrderingByLikes(long parentCommentID);
+    Page<Comment> findCommentsByParentCommentIdOrderingByLikes(long parentCommentId, Pageable pageable );
 
     Comment findCommentById(long commentId);
 
