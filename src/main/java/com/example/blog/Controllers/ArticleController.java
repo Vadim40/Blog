@@ -45,7 +45,7 @@ public class ArticleController {
             private final Page<ArticleViewDTO> articles;
             private final long topicSubscribers;
         }
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByTopicName(topicName, pageable);
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -65,7 +65,7 @@ public class ArticleController {
             @RequestParam(defaultValue = "ASC") Sort.Direction direction,
             @RequestParam(defaultValue = "creationDate") String sortBy) {
 
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByUserUsername(username, pageable);
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -80,7 +80,7 @@ public class ArticleController {
             @RequestParam(defaultValue = "1") int pageNumber,
             @RequestParam(defaultValue = "ASC") Sort.Direction direction,
             @RequestParam(defaultValue = "creationDate") String sortBy) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedFavoriteArticlesByAuthenticationUser(pageable);
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -88,13 +88,14 @@ public class ArticleController {
         Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
         return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
+
     @GetMapping("/draft")
     public ResponseEntity<Page<ArticleViewDTO>> findDraftArticles(
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "1") int pageNumber,
             @RequestParam(defaultValue = "ASC") Sort.Direction direction,
             @RequestParam(defaultValue = "creationDate") String sortBy) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findNotPublishedArticlesByAuthenticationUser(pageable);
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -104,14 +105,13 @@ public class ArticleController {
     }
 
 
-
     @GetMapping("/interests")
     public ResponseEntity<Page<ArticleViewDTO>> findArticlesByUserTopicOfInterest(
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "1") int pageNumber,
             @RequestParam(defaultValue = "ASC") Sort.Direction direction,
             @RequestParam(defaultValue = "creationDate") String sortBy) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByUserTopicsOfInterest(pageable);
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -128,7 +128,7 @@ public class ArticleController {
             @RequestParam(defaultValue = "1") int pageNumber,
             @RequestParam(defaultValue = "ASC") Sort.Direction direction,
             @RequestParam(defaultValue = "creationDate") String sortBy) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, direction, sortBy);
+        Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByTitleIsContainingIgnoreCaseString(title, pageable);
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -152,8 +152,8 @@ public class ArticleController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Object> saveArticle(@RequestBody @Valid ArticleDTO articleDTO,
-                                              BindingResult bindingResult) {
+    public ResponseEntity<Object> createArticle(@RequestBody @Valid ArticleDTO articleDTO,
+                                                BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
@@ -207,4 +207,9 @@ public class ArticleController {
         }
         return articleViewDTO;
     }
+
+    private Pageable createPageable(int pageNumber, int pageSize, Sort.Direction direction, String sortBy) {
+        return PageRequest.of(pageNumber - 1, pageSize, direction, sortBy);
+    }
+
 }

@@ -1,6 +1,6 @@
 package com.example.blog.Services;
 
-import com.example.blog.Excteptions.TopicAlreadyExists;
+import com.example.blog.Excteptions.TopicAlreadyExistsException;
 import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.Topic;
 import com.example.blog.Models.User;
@@ -39,7 +39,7 @@ public class TopicServiceTest {
 
         when(topicRepository.existsByNameIgnoreCase(topic.getName())).thenReturn(true);
 
-        Assertions.assertThatThrownBy(() -> topicService.saveTopic(topic)).isInstanceOf(TopicAlreadyExists.class);
+        Assertions.assertThatThrownBy(() -> topicService.saveTopic(topic)).isInstanceOf(TopicAlreadyExistsException.class);
     }
 
     @Test

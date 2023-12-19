@@ -3,49 +3,67 @@ package com.example.blog.Controllers;
 import com.example.blog.Mappers.TopicMapper;
 import com.example.blog.Models.Topic;
 import com.example.blog.Models.DTOs.TopicDTO;
-import com.example.blog.Services.Impementations.TopicServiceImpl;
+import com.example.blog.Services.Implementations.TopicServiceImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/topics")
+@RequestMapping("/api/topics")
 public class TopicController {
     private final TopicServiceImpl topicService;
     private final TopicMapper topicMapper;
 
-    @GetMapping("")
-    public String getAllTopics(Model model) {
-        Set<Topic> topics = topicService.findAllTopics();
-        model.addAttribute("topics", topics);
-        return "topics";
+    @GetMapping
+    public ResponseEntity<List<TopicDTO>> getAllTopics() {
+        List<Topic> topics = topicService.findAllTopics();
+        if (topics.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        List<TopicDTO> topicDTOS = topics.stream().map(topicMapper::mapToDTO).collect(Collectors.toList());
+        return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
     }
 
-    @GetMapping("/search/topic")
-    public String getTopicsByNameContaining(
-            @RequestParam String name,
-            Model model) {
-        Set<Topic> topics = topicService.findTopicsByNameIgnoreCaseContaining(name);
-        model.addAttribute("topics", topics);
-        return "allTopics";
+    @GetMapping("/search")
+    public ResponseEntity<List<TopicDTO>> getTopicsByNameContaining(
+            @RequestParam String name) {
+        List<Topic> topics = topicService.findTopicsByNameIgnoreCaseContaining(name);
+        if (topics.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        List<TopicDTO> topicDTOS = topics.stream().map(topicMapper::mapToDTO).collect(Collectors.toList());
+        return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<Object> createTopic(@RequestBody @Valid TopicDTO topicDTO, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+        Topic topic = topicMapper.mapToEntity(topicDTO);
+        topicService.saveTopic(topic);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{topicId}/update")
-    public String updateTopic(
+    public ResponseEntity<Void> updateTopic(
             @PathVariable long topicId,
             @RequestBody TopicDTO topicDTO) {
         Topic topic = topicMapper.mapToEntity(topicDTO);
         topicService.updateTopicById(topic, topicId);
-        return "some";
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{topicId}/delete")
-    public String deleteTopic(@PathVariable long topicId) {
+    public ResponseEntity<Void> deleteTopic(@PathVariable long topicId) {
         topicService.deleteTopicById(topicId);
-        return "some";
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

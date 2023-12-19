@@ -3,125 +3,128 @@ package com.example.blog.Controllers;
 import com.example.blog.Mappers.ImageMapper;
 import com.example.blog.Mappers.UserMapper;
 import com.example.blog.Models.DTOs.UserDTO;
+import com.example.blog.Models.DTOs.UserViewDTO;
 import com.example.blog.Models.Image;
 import com.example.blog.Models.User;
-import com.example.blog.Services.Impementations.UserServiceImpl;
+import com.example.blog.Services.Implementations.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Set;
 
-@Controller
-@RequestMapping("/users")
+@RestController
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserServiceImpl userService;
     private final UserMapper userMapper;
     private final ImageMapper imageMapper;
 
-    @GetMapping("/search/users")
-    public String findUsersByUsername(
-            @RequestParam String username,
-            @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            Model model) {
-        Page<User> users = userService.findUsersByUsernameIsContainingIgnoreCase(username, pageSize, pageNumber);
-        Page<UserDTO> userDTOS = users.map(userMapper::mapToDTO);
-        model.addAttribute("users", userDTOS);
-        return "users";
+    @GetMapping("/search")
+    public ResponseEntity<Page<UserViewDTO>> findUsersByUsername(@RequestParam String username,
+                                                                 @RequestParam(defaultValue = "20") int pageSize,
+                                                                 @RequestParam(defaultValue = "1") int pageNumber) {
+        Pageable pageable = createPageable(pageNumber, pageSize);
+        Page<User> users = userService.findUsersByUsernameIsContainingIgnoreCase(username, pageable);
+        if (users.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        Page<UserViewDTO> userViewDTOS = users.map(this::mapUserToUserViewDTO);
+        return new ResponseEntity<>(userViewDTOS, HttpStatus.OK);
     }
 
 
-    @GetMapping("/@{username}")
-    public String findUserByUsername(
-            @PathVariable String username,
-            Model model) {
+    @GetMapping("/{username}")
+    public ResponseEntity<UserViewDTO> findUserByUsername(@PathVariable String username) {
         User user = userService.findUserByUsername(username);
-        UserDTO userDTO = userMapper.mapToDTO(user);
-        model.addAttribute("user", userDTO);
-        model.addAttribute("isSubscribed", userService.isSubscribedToUser(username));
-        return "show";
+        UserViewDTO userViewDTO = mapUserToUserViewDTO(user);
+        return new ResponseEntity<>(userViewDTO, HttpStatus.OK);
     }
 
-    @GetMapping("/@{username}/followers")
-    public String findFollowers(
-            @PathVariable String username,
-            Model model) {
-        Set<User> followers = userService.findFollowers(username);
-        Set<UserDTO> followersDTO = (Set<UserDTO>) followers.stream().map(userMapper::mapToDTO);
-        model.addAttribute("followers", followersDTO);
-        return "followers";
-
+    @GetMapping("/{username}/followers")
+    public ResponseEntity<Page<UserViewDTO>> findFollowers(@PathVariable String username,
+                                                           @RequestParam(defaultValue = "20") int pageSize,
+                                                           @RequestParam(defaultValue = "1") int pageNumber) {
+        Pageable pageable = createPageable(pageNumber, pageSize);
+        Page<User> users = userService.findFollowers(username, pageable);
+        if (users.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        Page<UserViewDTO> followers = users.map(this::mapUserToUserViewDTO);
+        return new ResponseEntity<>(followers, HttpStatus.OK);
     }
 
-    @GetMapping("/@{username}/following")
-    public String findSubscriptions(
-            @PathVariable String username,
-            Model model) {
-        Set<User> followers = userService.findFollowing(username);
-        Set<UserDTO> followersDTO = (Set<UserDTO>) followers.stream().map(userMapper::mapToDTO);
-        model.addAttribute("followers", followersDTO);
-        return "followers";
-
+    @GetMapping("/{username}/following")
+    public ResponseEntity<Page<UserViewDTO>> findSubscriptions(@PathVariable String username,
+                                                               @RequestParam(defaultValue = "20") int pageSize,
+                                                               @RequestParam(defaultValue = "1") int pageNumber) {
+        Pageable pageable = createPageable(pageNumber, pageSize);
+        Page<User> users = userService.findFollowing(username, pageable);
+        if (users.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        Page<UserViewDTO> following = users.map(this::mapUserToUserViewDTO);
+        return new ResponseEntity<>(following, HttpStatus.OK);
     }
 
     @PutMapping("/{userId}/toggle-subscriptions")
-    public void toggleSubscriptions(
-            @PathVariable long userId) {
+    public ResponseEntity<Void> toggleSubscriptions(@PathVariable long userId) {
         userService.toggleFollowStatus(userId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/upload-avatar")
-    public String uploadAvatar(@RequestParam MultipartFile file) {
+    public ResponseEntity<Void> uploadAvatar(@RequestParam MultipartFile file) {
         Image image;
         try {
             image = imageMapper.mapToEntityFromMultipartFile(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        User user = userService.setAvatar(image);
-        return "redirect:/users/" + user.getId();
+        userService.setAvatar(image);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/save")
-    public String saveUser(@ModelAttribute @Valid UserDTO userDTO,
-                           BindingResult bindingResult,
-                           Model model) {
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("validationErrors", bindingResult.getAllErrors());
-            return "some";
-        }
+    @PostMapping("/create")
+    public ResponseEntity<Void> createUser(@RequestBody @Valid UserDTO userDTO) {
         User user = userMapper.mapToEntity(userDTO);
-        user = userService.saveUser(user);
-        return "redirect:/users/" + user.getId();
+        userService.saveUser(user);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{userId}/update")
-    public String updateUser(
-            @PathVariable long userId,
-            @ModelAttribute @Valid UserDTO userDTO,
-            BindingResult bindingResult,
-            Model model) {
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("validationErrors", bindingResult.getAllErrors());
-            return "some";
-        }
+    public ResponseEntity<Void> updateUser(@PathVariable long userId, @RequestBody @Valid UserDTO userDTO) {
         User user = userMapper.mapToEntity(userDTO);
         userService.updateUserById(user, userId);
-        return "redirect:/users/" + user.getId();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{userId}/delete")
-    public String deleteUser(@PathVariable long userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable long userId) {
         userService.deleteUserById(userId);
-        return "delete";
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private UserViewDTO mapUserToUserViewDTO(User user) {
+        UserViewDTO userViewDTO = new UserViewDTO();
+        UserDTO userDTO = userMapper.mapToDTO(user);
+        userViewDTO.setUserDTO(userDTO);
+        if (SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+            userViewDTO.setFollowed(userService.isFollowingUser(user.getUsername()));
+        }
+        return userViewDTO;
+    }
+
+    private Pageable createPageable(int pageNumber, int pageSize) {
+        return PageRequest.of(pageNumber - 1, pageSize);
     }
 
 }

@@ -1,6 +1,6 @@
 package com.example.blog.Services.Implementations;
 
-import com.example.blog.Excteptions.TopicAlreadyExists;
+import com.example.blog.Excteptions.TopicAlreadyExistsException;
 import com.example.blog.Excteptions.TopicNotFoundException;
 import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.Topic;
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class TopicServiceImpl implements TopicService {
     private final CustomUserDetailsService customUserDetailsService;
 
     @Override
-    public Set<Topic> findTopicsByNameIgnoreCaseContaining(String topicName) {
+    public List<Topic> findTopicsByNameIgnoreCaseContaining(String topicName) {
         return topicRepository.findTopicsByNameIgnoreCaseContaining(topicName);
     }
 
@@ -36,8 +36,8 @@ public class TopicServiceImpl implements TopicService {
     }
 
     @Override
-    public Set<Topic> findAllTopics() {
-        return (Set.copyOf(topicRepository.findAll()));
+    public List<Topic> findAllTopics() {
+        return topicRepository.findAll();
     }
 
     @Override
@@ -50,7 +50,7 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public Topic saveTopic(Topic topic) {
         if (topicRepository.existsByNameIgnoreCase(topic.getName())) {
-            throw new TopicAlreadyExists("Topic Already exists");
+            throw new TopicAlreadyExistsException("Topic Already exists");
         }
         return topicRepository.save(topic);
     }
