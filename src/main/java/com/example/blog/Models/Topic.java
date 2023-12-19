@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -29,10 +31,10 @@ public class Topic {
     private String name;
 
     @ManyToMany(mappedBy = "topicsOfInterest")
-    private Set<User> interestedUsers = new HashSet<>();
+    private List<User> interestedUsers = new ArrayList<>();
 
     private  boolean deleted=false;
 
     @ManyToMany(mappedBy = "topics")
-    private Set<Article> articles=new HashSet<>();
+    private List<Article> articles=new ArrayList<>();
 }

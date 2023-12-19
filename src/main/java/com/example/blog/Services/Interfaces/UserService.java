@@ -3,6 +3,7 @@ package com.example.blog.Services.Interfaces;
 import com.example.blog.Models.Image;
 import com.example.blog.Models.User;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Set;
 
@@ -10,10 +11,10 @@ public interface UserService {
     User findUserByArticleId(long articleId);
 
     User findUserByCommentId(long commentId);
-    Page<User> findUsersByUsernameIsContainingIgnoreCase(String username,int pageSize, int pageNumber);
-    Set<User> findFollowers(String username);
+    Page<User> findUsersByUsernameIsContainingIgnoreCase(String username,Pageable pageable);
+    Page<User> findFollowers(String username, Pageable pageable);
 
-    Set<User> findFollowing(String username);
+    Page<User> findFollowing(String username, Pageable pageable);
 
     void toggleFollowStatus(long userToSubscribeId);
 
@@ -27,7 +28,7 @@ public interface UserService {
 
     User updateUserById(User user, long userId);
 
-    boolean isSubscribedToUser(String username);
+    boolean isFollowingUser(String username);
 
     void deleteUserById(long id);
 }

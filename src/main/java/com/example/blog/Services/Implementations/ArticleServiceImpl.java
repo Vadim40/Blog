@@ -1,4 +1,4 @@
-package com.example.blog.Services.Impementations;
+package com.example.blog.Services.Implementations;
 
 import com.example.blog.Excteptions.ArticleNotFoundException;
 import com.example.blog.Models.Article;
@@ -38,9 +38,13 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Page<Article> findPublishedFavoriteArticlesByAuthenticationUser(Pageable pageable) {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
-        Set<Article> favoriteArticles = authenticationUser.getFavoriteArticles();
+        List<Article> favoriteArticles = authenticationUser.getFavoriteArticles();
+        return mapSetArticlesToPage(favoriteArticles,pageable);
 
-        List<Article> articleList = new ArrayList<>(favoriteArticles);
+    }
+
+    private Page<Article> mapSetArticlesToPage(List<Article> articleSet, Pageable pageable) {
+        List<Article> articleList = new ArrayList<>(articleSet);
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), articleList.size());
         List<Article> subList = articleList.subList(start, end);
@@ -60,7 +64,7 @@ public class ArticleServiceImpl implements ArticleService {
         for (Topic topic : authenticatedUser.getTopicsOfInterest()) {
             articles.addAll(findPublishedArticlesByTopicName(topic.getName(), pageable).getContent());
         }
-        return new PageImpl<>(List.copyOf(articles), pageable, articles.size());
+       return mapSetArticlesToPage(List.copyOf(articles),pageable);
     }
 
 

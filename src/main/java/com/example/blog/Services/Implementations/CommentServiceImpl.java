@@ -1,4 +1,4 @@
-package com.example.blog.Services.Impementations;
+package com.example.blog.Services.Implementations;
 
 import com.example.blog.Excteptions.CommentNotFoundException;
 import com.example.blog.Models.Article;

@@ -1,6 +1,6 @@
 package com.example.blog.Configurations;
 
-import com.example.blog.Services.Impementations.CustomUserDetailsService;
+import com.example.blog.Services.Implementations.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

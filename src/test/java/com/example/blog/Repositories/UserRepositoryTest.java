@@ -14,6 +14,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 @DataJpaTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 class UserRepositoryTest {
@@ -86,16 +91,52 @@ class UserRepositoryTest {
         Assertions.assertThat(foundUser1).isEqualTo(foundUser2);
         Assertions.assertThat(foundUser1.getEmail()).isEqualTo(user.getEmail());
     }
+
     @Test
-    public void findUsersByUsername(){
-        User user1 =userRepository.save(User.builder()
+    public void findUsersByUsername() {
+        User user1 = userRepository.save(User.builder()
                 .username("around")
                 .build());
-        User user2 =userRepository.save(User.builder()
+        User user2 = userRepository.save(User.builder()
                 .username("Arron")
                 .build());
-        Pageable pageable=PageRequest.of(0,3);
-        Page<User> users=userRepository.findUsersByUsernameIsContainingIgnoreCase("ar",pageable);
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<User> users = userRepository.findUsersByUsernameIsContainingIgnoreCase("ar", pageable);
         Assertions.assertThat(users.getTotalElements()).isEqualTo(2);
     }
+
+    @Test
+    void findFollowersByUser() {
+        User user1 = userRepository.save(User.builder()
+                .username("around")
+                .build());
+        User user2 = userRepository.save(User.builder()
+                .username("some")
+                .build());
+        List<User> followers = new ArrayList<>();
+        followers.add(user1);
+        followers.add(user2);
+        User user3 = userRepository.save(User.builder()
+                .username("Arron")
+                .followers(followers)
+                .build());
+        Pageable pageable = PageRequest.of(0, 2);
+        User user = userRepository.findUserByUsername(user3.getUsername()).orElseThrow(null);
+        Assertions.assertThat(user.getFollowers().size()).isEqualTo(2);
+    }
+
+    @Test
+    void findFollowingsByUser() {
+        User user1 = new User();
+        user1.setUsername("Arron");
+        User user3 = new User();
+        user1.getFollowing().add(user3);
+        user3.getFollowers().add(user1);
+        userRepository.save(user3);
+        userRepository.save(user1);
+        User user = userRepository.findUserByUsername(user1.getUsername()).orElseThrow(() -> new RuntimeException("not found"));
+        Assertions.assertThat(user.getFollowing().size()).isEqualTo(1);
+    }
+
+
 }

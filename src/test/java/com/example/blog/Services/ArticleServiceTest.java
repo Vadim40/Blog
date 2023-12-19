@@ -7,8 +7,8 @@ import com.example.blog.Models.Topic;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.ArticleRepository;
 import com.example.blog.Repositories.UserRepository;
-import com.example.blog.Services.Impementations.ArticleServiceImpl;
-import com.example.blog.Services.Impementations.CustomUserDetailsService;
+import com.example.blog.Services.Implementations.ArticleServiceImpl;
+import com.example.blog.Services.Implementations.CustomUserDetailsService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +51,7 @@ public class ArticleServiceTest {
         Article article2 = Article.builder()
                 .text("some2")
                 .build();
-        Set<Article> articles = new HashSet<>();
+        List<Article> articles = new ArrayList<>();
         articles.add(article1);
         articles.add(article2);
         User user = User.builder()
@@ -69,7 +69,7 @@ public class ArticleServiceTest {
     @Test
     public void saveArticle() {
         User user = User.builder()
-                .articles(new HashSet<>())
+                .articles(new ArrayList<>())
                 .username("valentine")
                 .build();
         Article article = Article.builder()
@@ -103,7 +103,7 @@ public class ArticleServiceTest {
                 .id(2L)
                 .name("life")
                 .build();
-        Set<Topic> topicOfInterest = new HashSet<>();
+        List<Topic> topicOfInterest = new ArrayList<>();
         topicOfInterest.add(topicLife);
         topicOfInterest.add(topicJava);
         User user = User.builder()
@@ -192,7 +192,7 @@ public class ArticleServiceTest {
     public void toggleLike_Test() {
         User user = User.builder()
                 .username("valentine")
-                .likedArticles(new HashSet<>())
+                .likedArticles(new ArrayList<>())
                 .build();
         long articleId1 = 1L;
         Article article1 = Article.builder()
@@ -238,6 +238,4 @@ public class ArticleServiceTest {
 
         Assertions.assertThat(article.getImages().size()).isEqualTo(1);
     }
-
-
 }

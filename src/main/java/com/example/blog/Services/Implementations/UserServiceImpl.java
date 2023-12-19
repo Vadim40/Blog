@@ -1,4 +1,4 @@
-package com.example.blog.Services.Impementations;
+package com.example.blog.Services.Implementations;
 
 import com.example.blog.Excteptions.UserNotFoundException;
 import com.example.blog.Models.Enums.Role;
@@ -8,14 +8,16 @@ import com.example.blog.Repositories.UserRepository;
 import com.example.blog.Services.Interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -38,33 +40,45 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> findUsersByUsernameIsContainingIgnoreCase(String username, int pageSize, int pageNumber) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+    public Page<User> findUsersByUsernameIsContainingIgnoreCase(String username, Pageable pageable) {
         return userRepository.findUsersByUsernameIsContainingIgnoreCase(username, pageable);
     }
 
     @Override
-    public Set<User> findFollowers(String username) {
+    public Page<User> findFollowers(String username, Pageable pageable) {
         User user = findUserByUsername(username);
-        return user.getFollowers();
+        return mapListUsersToPage(user.getFollowers(), pageable);
     }
 
     @Override
-    public Set<User> findFollowing(String username) {
+    public Page<User> findFollowing(String username, Pageable pageable) {
         User user = findUserByUsername(username);
-        return user.getFollowing();
+        return mapListUsersToPage(user.getFollowing(), pageable);
     }
 
+    private Page<User> mapListUsersToPage(List<User> userSet, Pageable pageable) {
+        List<User> articleList = new ArrayList<>(userSet);
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), articleList.size());
+        List<User> subList = articleList.subList(start, end);
+
+        return new PageImpl<>(subList, pageable, articleList.size());
+    }
+
+    @Transactional
     @Override
     public void toggleFollowStatus(long userToSubscribeId) {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
         User userToSubscribe = findUserById(userToSubscribeId);
         if (authenticationUser.getFollowing().contains(userToSubscribe)) {
             authenticationUser.getFollowing().remove(userToSubscribe);
+            userToSubscribe.getFollowers().remove(authenticationUser);
         } else {
             authenticationUser.getFollowing().add(userToSubscribe);
+            userToSubscribe.getFollowers().add(authenticationUser);
         }
         userRepository.save(authenticationUser);
+        userRepository.save(userToSubscribe);
     }
 
 
@@ -104,7 +118,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean isSubscribedToUser(String username) {
+    public boolean isFollowingUser(String username) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         User user = findUserByUsername(username);
         return authenticatedUser.getFollowing().contains(user);

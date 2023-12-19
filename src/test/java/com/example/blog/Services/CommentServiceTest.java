@@ -6,9 +6,9 @@ import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.CommentRepository;
 import com.example.blog.Repositories.UserRepository;
-import com.example.blog.Services.Impementations.ArticleServiceImpl;
-import com.example.blog.Services.Impementations.CommentServiceImpl;
-import com.example.blog.Services.Impementations.CustomUserDetailsService;
+import com.example.blog.Services.Implementations.ArticleServiceImpl;
+import com.example.blog.Services.Implementations.CommentServiceImpl;
+import com.example.blog.Services.Implementations.CustomUserDetailsService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -43,7 +43,7 @@ public class CommentServiceTest {
     @Test
     public void addCommentToArticle() {
         User user = User.builder()
-                .comments(new HashSet<>())
+                .comments(new ArrayList<>())
                 .username("crossfade")
                 .build();
         Article article = new Article();

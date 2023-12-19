@@ -14,9 +14,7 @@
     import org.springframework.security.core.userdetails.UserDetails;
 
     import java.time.LocalDate;
-    import java.util.Collection;
-    import java.util.HashSet;
-    import java.util.Set;
+    import java.util.*;
     import java.util.stream.Collectors;
 
     @Entity
@@ -69,12 +67,12 @@
                 joinColumns = @JoinColumn(name = "user_id"),
                 inverseJoinColumns = @JoinColumn(name = "subscription_id")
         )
-        private Set<User> following =new HashSet<>();
+        private List<User> following =new ArrayList<>();
 
         @ManyToMany(mappedBy = "following")
-        private Set<User> followers=new HashSet<>();
+        private List<User> followers=new ArrayList<>();
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-        private Set<Article> articles=new HashSet<>();
+        private List<Article> articles=new ArrayList<>();
 
         @ManyToMany
         @JoinTable(
@@ -82,10 +80,10 @@
                 joinColumns = @JoinColumn(name = "user_id"),
                 inverseJoinColumns = @JoinColumn(name = "article_id")
         )
-        private Set<Article> favoriteArticles =new HashSet<>();
+        private List<Article> favoriteArticles =new ArrayList<>();
 
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-        private Set<Comment> comments=new HashSet<>();
+        private List<Comment> comments=new ArrayList<>();
 
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
         private Image avatar;
@@ -95,14 +93,14 @@
                 joinColumns = @JoinColumn(name = "user_id")
         )
         @Column(name = "article_id")
-        private Set<Long> likedArticles=new HashSet<>();
+        private List<Long> likedArticles=new ArrayList<>();
         @ElementCollection
         @CollectionTable(
                 name = "user_liked_comments",
                 joinColumns = @JoinColumn(name = "user_id")
         )
         @Column(name = "comment_id")
-        private Set<Long> likedComments=new HashSet<>();
+        private List<Long> likedComments=new ArrayList<>();
 
         @ManyToMany
         @JoinTable(
@@ -110,7 +108,7 @@
                 joinColumns =@JoinColumn(name = "user_id"),
                 inverseJoinColumns = @JoinColumn(name ="topic_id")
         )
-        private Set<Topic> topicsOfInterest=new HashSet<>();
+        private List<Topic> topicsOfInterest=new ArrayList<>();
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
             return roles.stream()
@@ -139,6 +137,19 @@
         public boolean isEnabled() {
             return false;
         }
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, username);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
+            User user = (User) obj;
+            return Objects.equals(id, user.id) && Objects.equals(username, user.username);
+        }
+
 
 
     }

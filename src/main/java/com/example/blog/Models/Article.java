@@ -50,7 +50,7 @@ public class Article {
     )
     private Set<Topic> topics=new HashSet<>();
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
-    private Set<Comment> comments=new HashSet<>();
+    private List<Comment> comments=new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

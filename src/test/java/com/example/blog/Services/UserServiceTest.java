@@ -3,21 +3,22 @@ package com.example.blog.Services;
 import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.UserRepository;
-import com.example.blog.Services.Impementations.CustomUserDetailsService;
-import com.example.blog.Services.Impementations.UserServiceImpl;
+import com.example.blog.Services.Implementations.CustomUserDetailsService;
+import com.example.blog.Services.Implementations.UserServiceImpl;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -39,25 +40,27 @@ public class UserServiceTest {
         User follower = User.builder()
                 .username("asdff")
                 .build();
-        Set<User> followers = new HashSet<>();
+        List<User> followers = new ArrayList<>();
         followers.add(follower);
         User user = User.builder()
                 .username("sea")
                 .followers(followers)
                 .build();
         when(userRepository.findUserByUsername(anyString())).thenReturn(Optional.ofNullable(user));
-        Set<User> foundFollowers = userService.findFollowers("sea");
-        Assertions.assertThat(foundFollowers.size()).isEqualTo(1);
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<User> foundFollowers = userService.findFollowers("sea",pageable);
+        Assertions.assertThat(foundFollowers.getTotalElements()).isEqualTo(1);
     }
 
     @Test
     public void toggleFollowStatus_Test() {
         User user = User.builder()
                 .username("the core")
-                .following(new HashSet<>())
+                .following(new ArrayList<>())
                 .build();
         User userToSubscribe = User.builder()
                 .username("earshot")
+                .followers(new ArrayList<>())
                 .build();
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
         when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(userToSubscribe));
