@@ -7,9 +7,11 @@ import java.util.Set;
 
 public interface TopicService {
     List<Topic> findTopicsByNameIgnoreCaseContaining(String topicName);
+
     int findTopicFollowersCount(String topicName);
 
     Topic findTopicByName(String topicName);
+
     List<Topic> findAllTopics();
 
     Topic findTopicById(long topicId);

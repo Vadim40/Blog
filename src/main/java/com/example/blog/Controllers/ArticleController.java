@@ -1,5 +1,6 @@
 package com.example.blog.Controllers;
 
+import com.example.blog.Excteptions.ArticleNotFoundException;
 import com.example.blog.Mappers.ArticleMapper;
 import com.example.blog.Mappers.UserMapper;
 import com.example.blog.Models.Article;
@@ -33,12 +34,11 @@ public class ArticleController {
     private final UserMapper userMapper;
 
     @GetMapping("/topic/{topicName}")
-    public ResponseEntity<Object> findArticlesByTopic(
-            @PathVariable String topicName,
-            @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
-            @RequestParam(defaultValue = "creationDate") String sortBy) {
+    public ResponseEntity<Object> findArticlesByTopic(@PathVariable String topicName,
+                                                      @RequestParam(defaultValue = "20") int pageSize,
+                                                      @RequestParam(defaultValue = "1") int pageNumber,
+                                                      @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+                                                      @RequestParam(defaultValue = "creationDate") String sortBy) {
         @AllArgsConstructor
         @Getter
         class CustomApiResponse {
@@ -58,12 +58,11 @@ public class ArticleController {
 
 
     @GetMapping("/user/{username}")
-    public ResponseEntity<Page<ArticleViewDTO>> findArticlesByUser(
-            @PathVariable String username,
-            @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
-            @RequestParam(defaultValue = "creationDate") String sortBy) {
+    public ResponseEntity<Page<ArticleViewDTO>> findArticlesByUser(@PathVariable String username,
+                                                                   @RequestParam(defaultValue = "20") int pageSize,
+                                                                   @RequestParam(defaultValue = "1") int pageNumber,
+                                                                   @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+                                                                   @RequestParam(defaultValue = "creationDate") String sortBy) {
 
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByUserUsername(username, pageable);
@@ -75,11 +74,10 @@ public class ArticleController {
     }
 
     @GetMapping("/favorites")
-    public ResponseEntity<Page<ArticleViewDTO>> findFavoriteArticles(
-            @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
-            @RequestParam(defaultValue = "creationDate") String sortBy) {
+    public ResponseEntity<Page<ArticleViewDTO>> findFavoriteArticles(@RequestParam(defaultValue = "20") int pageSize,
+                                                                     @RequestParam(defaultValue = "1") int pageNumber,
+                                                                     @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+                                                                     @RequestParam(defaultValue = "creationDate") String sortBy) {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedFavoriteArticlesByAuthenticationUser(pageable);
         if (articles.isEmpty()) {
@@ -90,11 +88,10 @@ public class ArticleController {
     }
 
     @GetMapping("/draft")
-    public ResponseEntity<Page<ArticleViewDTO>> findDraftArticles(
-            @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
-            @RequestParam(defaultValue = "creationDate") String sortBy) {
+    public ResponseEntity<Page<ArticleViewDTO>> findDraftArticles(@RequestParam(defaultValue = "20") int pageSize,
+                                                                  @RequestParam(defaultValue = "1") int pageNumber,
+                                                                  @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+                                                                  @RequestParam(defaultValue = "creationDate") String sortBy) {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findNotPublishedArticlesByAuthenticationUser(pageable);
         if (articles.isEmpty()) {
@@ -106,11 +103,10 @@ public class ArticleController {
 
 
     @GetMapping("/interests")
-    public ResponseEntity<Page<ArticleViewDTO>> findArticlesByUserTopicOfInterest(
-            @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
-            @RequestParam(defaultValue = "creationDate") String sortBy) {
+    public ResponseEntity<Page<ArticleViewDTO>> findArticlesByUserTopicOfInterest(@RequestParam(defaultValue = "20") int pageSize,
+                                                                                  @RequestParam(defaultValue = "1") int pageNumber,
+                                                                                  @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+                                                                                  @RequestParam(defaultValue = "creationDate") String sortBy) {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByUserTopicsOfInterest(pageable);
         if (articles.isEmpty()) {
@@ -122,12 +118,11 @@ public class ArticleController {
 
 
     @GetMapping("/search")
-    public ResponseEntity<Page<ArticleViewDTO>> findArticlesByTitleIsContainingIgnoreCase(
-            @RequestParam String title,
-            @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            @RequestParam(defaultValue = "ASC") Sort.Direction direction,
-            @RequestParam(defaultValue = "creationDate") String sortBy) {
+    public ResponseEntity<Page<ArticleViewDTO>> findArticlesByTitleIsContainingIgnoreCase(@RequestParam String title,
+                                                                                          @RequestParam(defaultValue = "20") int pageSize,
+                                                                                          @RequestParam(defaultValue = "1") int pageNumber,
+                                                                                          @RequestParam(defaultValue = "ASC") Sort.Direction direction,
+                                                                                          @RequestParam(defaultValue = "creationDate") String sortBy) {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByTitleIsContainingIgnoreCaseString(title, pageable);
         if (articles.isEmpty()) {
@@ -138,17 +133,17 @@ public class ArticleController {
     }
 
     @GetMapping("/{articleId}")
-    public ResponseEntity<ArticleViewDTO> findArticleById(@PathVariable long articleId) {
-        Article article = articleService.findPublishedArticleById(articleId);
-        ArticleViewDTO articleViewDTO = mapArticleToArticleViewDTO(article);
-        return new ResponseEntity<>(articleViewDTO, HttpStatus.OK);
+    public ResponseEntity<Object> findArticleById(@PathVariable long articleId) {
+            Article article = articleService.findPublishedArticleById(articleId);
+            ArticleViewDTO articleViewDTO = mapArticleToArticleViewDTO(article);
+            return new ResponseEntity<>(articleViewDTO, HttpStatus.OK);
     }
 
 
     @PutMapping("/{articleId}/publish")
-    public ResponseEntity<Void> publishArticle(@PathVariable long articleId) {
-        articleService.publishArticle(articleId);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Object> publishArticle(@PathVariable long articleId) {
+           articleService.publishArticle(articleId);
+           return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/create")

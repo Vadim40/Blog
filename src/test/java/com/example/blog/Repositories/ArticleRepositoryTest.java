@@ -14,7 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 
-
 import java.util.HashSet;
 import java.util.List;
 
@@ -42,7 +41,6 @@ class ArticleRepositoryTest {
         Assertions.assertThat(savedArticle).isNotNull();
 
     }
-
 
 
     @Test
@@ -98,7 +96,7 @@ class ArticleRepositoryTest {
     @Test
     public void findArticleByTopicName() {
 
-        Topic topic=topicRepository.save(new Topic());
+        Topic topic = topicRepository.save(new Topic());
         topic.setName("Java");
         Article article1 = Article.builder()
                 .topics(new HashSet<>(List.of(topic)))
@@ -114,9 +112,10 @@ class ArticleRepositoryTest {
         articleRepository.save(article1);
         articleRepository.save(article2);
         Pageable pageable = PageRequest.of(0, 3);
-        Page<Article> articles = articleRepository.findArticlesByPublishedIsTrueAndTopicsName("Java",pageable);
+        Page<Article> articles = articleRepository.findArticlesByPublishedIsTrueAndTopicsName("Java", pageable);
         Assertions.assertThat(articles.getTotalElements()).isEqualTo(2);
     }
+
     @Test
     public void findArticleByPublishedIsFalse() {
 

@@ -17,9 +17,11 @@ public interface ArticleService {
     Page<Article> findPublishedArticlesByUserTopicsOfInterest(Pageable pageable);
 
     Page<Article> findPublishedArticlesByTitleIsContainingIgnoreCaseString(String title, Pageable pageable);
+
     Page<Article> findNotPublishedArticlesByAuthenticationUser(Pageable pageable);
 
     Article findPublishedArticleById(long articleId);
+
     Article findArticleById(long articleId);
 
     Article publishArticle(long articleId);

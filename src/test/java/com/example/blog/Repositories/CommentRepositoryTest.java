@@ -25,45 +25,46 @@ class CommentRepositoryTest {
 
     @Autowired
     private CommentRepository commentRepository;
+
     @Test
     void findCommentsByParentCommentIsNullArticleId() {
-        Article article =articleRepository.save( Article.builder()
+        Article article = articleRepository.save(Article.builder()
                 .text("Article")
                 .build());
         articleRepository.save(article);
-        Comment comment1=Comment.builder()
+        Comment comment1 = Comment.builder()
                 .likes(10)
                 .article(article)
                 .build();
-        Comment comment2=Comment.builder()
+        Comment comment2 = Comment.builder()
                 .likes(20)
                 .article(article)
                 .build();
         commentRepository.save(comment1);
         commentRepository.save(comment2);
-        Pageable pageable= PageRequest.of(0,2);
-        Page<Comment> foundComments=commentRepository.findCommentsByParentCommentIsNullAndArticleId(article.getId(),pageable);
+        Pageable pageable = PageRequest.of(0, 2);
+        Page<Comment> foundComments = commentRepository.findCommentsByParentCommentIsNullAndArticleId(article.getId(), pageable);
         Assertions.assertThat(foundComments).isNotEmpty();
         Assertions.assertThat(foundComments.getTotalElements()).isGreaterThan(1);
     }
 
     @Test
     void findCommentsByParentCommentId() {
-        Comment parentComment= commentRepository.save(Comment.builder()
+        Comment parentComment = commentRepository.save(Comment.builder()
                 .likes(10)
                 .build());
-        Comment comment1=Comment.builder()
+        Comment comment1 = Comment.builder()
                 .likes(2)
                 .parentComment(parentComment)
                 .build();
-        Comment comment2=Comment.builder()
+        Comment comment2 = Comment.builder()
                 .likes(3)
                 .parentComment(parentComment)
                 .build();
         commentRepository.save(comment1);
         commentRepository.save(comment2);
-        Pageable pageable= PageRequest.of(0,2);
-        Page<Comment> foundComments=commentRepository.findCommentsByParentCommentId(parentComment.getId(),pageable);
+        Pageable pageable = PageRequest.of(0, 2);
+        Page<Comment> foundComments = commentRepository.findCommentsByParentCommentId(parentComment.getId(), pageable);
         Assertions.assertThat(foundComments).isNotEmpty();
         Assertions.assertThat(foundComments.getTotalElements()).isGreaterThan(1);
     }

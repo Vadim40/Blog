@@ -1,6 +1,5 @@
 package com.example.blog.Services.Implementations;
 
-import com.example.blog.Excteptions.TopicAlreadyExistsException;
 import com.example.blog.Excteptions.TopicNotFoundException;
 import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.Topic;
@@ -26,7 +25,7 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public int findTopicFollowersCount(String topicName) {
-        Topic topic=topicRepository.findTopicByName(topicName);
+        Topic topic = topicRepository.findTopicByName(topicName);
         return topic.getInterestedUsers().size();
     }
 
@@ -49,9 +48,6 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public Topic saveTopic(Topic topic) {
-        if (topicRepository.existsByNameIgnoreCase(topic.getName())) {
-            throw new TopicAlreadyExistsException("Topic Already exists");
-        }
         return topicRepository.save(topic);
     }
 

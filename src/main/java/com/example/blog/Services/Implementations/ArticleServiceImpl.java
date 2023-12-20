@@ -39,7 +39,7 @@ public class ArticleServiceImpl implements ArticleService {
     public Page<Article> findPublishedFavoriteArticlesByAuthenticationUser(Pageable pageable) {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
         List<Article> favoriteArticles = authenticationUser.getFavoriteArticles();
-        return mapSetArticlesToPage(favoriteArticles,pageable);
+        return mapSetArticlesToPage(favoriteArticles, pageable);
 
     }
 
@@ -64,7 +64,7 @@ public class ArticleServiceImpl implements ArticleService {
         for (Topic topic : authenticatedUser.getTopicsOfInterest()) {
             articles.addAll(findPublishedArticlesByTopicName(topic.getName(), pageable).getContent());
         }
-       return mapSetArticlesToPage(List.copyOf(articles),pageable);
+        return mapSetArticlesToPage(List.copyOf(articles), pageable);
     }
 
 
@@ -74,9 +74,9 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Page<Article> findNotPublishedArticlesByAuthenticationUser( Pageable pageable) {
-        User authenticatedUser =customUserDetailsService.getAuthenticatedUser();
-        return articleRepository.findArticlesByPublishedIsFalseAndUserUsername(authenticatedUser.getUsername(),pageable);
+    public Page<Article> findNotPublishedArticlesByAuthenticationUser(Pageable pageable) {
+        User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
+        return articleRepository.findArticlesByPublishedIsFalseAndUserUsername(authenticatedUser.getUsername(), pageable);
     }
 
 
@@ -87,14 +87,14 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public Article findArticleById(long articleId) {
-       return articleRepository.findById(articleId).orElseThrow(() -> new ArticleNotFoundException("Article not found."));
+        return articleRepository.findById(articleId).orElseThrow(() -> new ArticleNotFoundException("Article not found."));
     }
 
     @Override
     public Article publishArticle(long articleId) {
         Article article = findArticleById(articleId);
         if (article.isPublished()) {
-            throw new IllegalArgumentException("You are already saved this user.");
+            throw new IllegalArgumentException("You are already published this article.");
         }
         article.setPublished(true);
         return articleRepository.save(article);

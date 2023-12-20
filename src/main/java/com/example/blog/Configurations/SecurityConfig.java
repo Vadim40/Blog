@@ -47,15 +47,15 @@ public class SecurityConfig {
         http.csrf().disable()
                 .authorizeHttpRequests()
                 .requestMatchers("/**").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .formLogin()
-                .and()
-                .logout().clearAuthentication(true)
-                .deleteCookies("JSESSIONID","remember-me")
-                .invalidateHttpSession(true)
-                .and()
-                .httpBasic();
+                .anyRequest().authenticated();
+//                .and()
+//                .formLogin()
+//                .and()
+//                .logout().clearAuthentication(true)
+//                .deleteCookies("JSESSIONID","remember-me")
+//                .invalidateHttpSession(true)
+//                .and()
+//                .httpBasic();
 
         return http.build();
     }

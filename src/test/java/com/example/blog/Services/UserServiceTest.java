@@ -48,7 +48,7 @@ public class UserServiceTest {
                 .build();
         when(userRepository.findUserByUsername(anyString())).thenReturn(Optional.ofNullable(user));
         Pageable pageable = PageRequest.of(0, 3);
-        Page<User> foundFollowers = userService.findFollowers("sea",pageable);
+        Page<User> foundFollowers = userService.findFollowers("sea", pageable);
         Assertions.assertThat(foundFollowers.getTotalElements()).isEqualTo(1);
     }
 
