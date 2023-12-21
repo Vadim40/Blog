@@ -130,6 +130,11 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(userId);
     }
 
+    @Override
+    public boolean IsUsernameExists(String username) {
+        return userRepository.existsByUsernameIgnoreCase(username);
+    }
+
     private void checkUserAccess(long userId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         if (!authenticatedUser.getRoles().contains(Role.ADMIN) && authenticatedUser.getId() != userId) {

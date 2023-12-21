@@ -12,28 +12,29 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class ArticleMapper {
-  private final    ImageMapper imageMapper;
-  private final TopicMapper topicMapper;
-    public ArticleDTO mapToDTO(Article article){
+    private final ImageMapper imageMapper;
+    private final TopicMapper topicMapper;
 
-        return ArticleDTO.builder()
-                .id(article.getId())
-                .title(article.getTitle())
-                .creationDate(article.getCreationDate())
-                .images(article.getImages().stream().map(imageMapper::mapToDTO).collect(Collectors.toList()))
-                .topics(article.getTopics().stream().map(topicMapper::mapToDTO).collect(Collectors.toSet()))
-                .likes(article.getLikes())
-                .text(article.getText())
-                .build();
+    public ArticleDTO mapToDTO(Article article) {
+        ArticleDTO articleDTO = new ArticleDTO();
+        articleDTO.setId(article.getId());
+        articleDTO.setTitle(article.getTitle());
+        articleDTO.setCreationDate(article.getCreationDate());
+        articleDTO.setImages(article.getImages().stream().map(imageMapper::mapToDTO).collect(Collectors.toList()));
+        articleDTO.setTopics(article.getTopics().stream().map(topicMapper::mapToDTO).collect(Collectors.toList()));
+        articleDTO.setLikes(article.getLikes());
+        articleDTO.setText(article.getText());
+        return articleDTO;
     }
-    public Article mapToEntity(ArticleDTO articleDTO){
-        return Article.builder()
-                .id(articleDTO.getId())
-                .creationDate(articleDTO.getCreationDate())
-                .images(articleDTO.getImages().stream().map(imageMapper::mapToEntity).collect(Collectors.toList()))
-                .topics(articleDTO.getTopics().stream().map(topicMapper::mapToEntity).collect(Collectors.toSet()))
-                .likes(articleDTO.getLikes())
-                .text(articleDTO.getText())
-                .build();
+
+    public Article mapToEntity(ArticleDTO articleDTO) {
+        Article article = new Article();
+        article.setId(articleDTO.getId());
+        article.setCreationDate(articleDTO.getCreationDate());
+        article.setImages(articleDTO.getImages().stream().map(imageMapper::mapToEntity).collect(Collectors.toList()));
+        article.setTopics(articleDTO.getTopics().stream().map(topicMapper::mapToEntity).collect(Collectors.toSet()));
+        article.setLikes(articleDTO.getLikes());
+        article.setText(articleDTO.getText());
+        return article;
     }
 }

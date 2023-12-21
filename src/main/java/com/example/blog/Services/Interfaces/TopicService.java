@@ -3,7 +3,6 @@ package com.example.blog.Services.Interfaces;
 import com.example.blog.Models.Topic;
 
 import java.util.List;
-import java.util.Set;
 
 public interface TopicService {
     List<Topic> findTopicsByNameIgnoreCaseContaining(String topicName);
@@ -21,4 +20,5 @@ public interface TopicService {
     Topic updateTopicById(Topic topic, long topicId);
 
     void deleteTopicById(long topicId);
+    boolean isTopicExists(String name);
 }

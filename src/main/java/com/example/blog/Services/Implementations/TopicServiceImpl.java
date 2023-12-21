@@ -64,6 +64,11 @@ public class TopicServiceImpl implements TopicService {
         topicRepository.deleteById(topicId);
     }
 
+    @Override
+    public boolean isTopicExists(String name) {
+        return topicRepository.existsByNameIgnoreCase(name);
+    }
+
     private void checkAccess() {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         if (!authenticatedUser.getRoles().contains(Role.ADMIN)) {

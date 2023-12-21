@@ -1,8 +1,8 @@
 package com.example.blog.Models.DTOs;
 
 
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 
@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class CommentDTO {
     private long id;
     @NotBlank
-    @Max(value = 800,message = "no more than 800 characters")
+    @Size(max = 800,message = "no more than 800 characters")
     private String text;
     private int likes;
     private LocalDate creationDate;

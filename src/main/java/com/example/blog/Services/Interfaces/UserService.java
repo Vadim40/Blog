@@ -34,4 +34,6 @@ public interface UserService {
     boolean isFollowingUser(String username);
 
     void deleteUserById(long id);
+
+    boolean IsUsernameExists(String username);
 }

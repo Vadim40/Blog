@@ -9,23 +9,26 @@ import java.io.IOException;
 
 @Component
 public class ImageMapper {
-    public ImageDTO mapToDTO(Image image){
-        return ImageDTO.builder()
-                .id(image.getId())
-                .name(image.getName())
-                .imageData(image.getImageData())
-                .build();
+    public ImageDTO mapToDTO(Image image) {
+        ImageDTO imageDTO = new ImageDTO();
+        imageDTO.setId(image.getId());
+        imageDTO.setName(image.getName());
+        imageDTO.setImageData(image.getImageData());
+        return imageDTO;
     }
-    public Image mapToEntity(ImageDTO imageDTO){
-        return Image.builder()
-                .id(imageDTO.getId())
-                .name(imageDTO.getName())
-                .imageData(imageDTO.getImageData())
-                .build();
+
+    public Image mapToEntity(ImageDTO imageDTO) {
+        Image image = new Image();
+        image.setId(imageDTO.getId());
+        image.setName(imageDTO.getName());
+        image.setImageData(imageDTO.getImageData());
+        return image;
     }
+
     public Image mapToEntityFromMultipartFile(MultipartFile file) throws IOException {
-     return Image.builder().name(file.getOriginalFilename())
-                .imageData(file.getBytes())
-                .build();
+        Image image = new Image();
+        image.setName(file.getOriginalFilename());
+        image.setImageData(file.getBytes());
+        return image;
     }
 }

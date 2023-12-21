@@ -1,6 +1,8 @@
 package com.example.blog.Models.DTOs;
 
-import jakarta.validation.constraints.Max;
+
+import com.example.blog.Validators.Annotations.UniqueName;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TopicDTO {
     long id;
-    @Max(value = 30,message = "no more than 30 symbols")
+    @Size(max = 30, message = "no more than 30 symbols")
+    @UniqueName
     String name;
 }

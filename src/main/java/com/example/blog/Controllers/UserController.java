@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -94,14 +95,23 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Void> createUser(@RequestBody @Valid UserDTO userDTO) {
+    public ResponseEntity<Object> createUser(@RequestBody @Valid UserDTO userDTO,
+                                           BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
         User user = userMapper.mapToEntity(userDTO);
         userService.saveUser(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{userId}/update")
-    public ResponseEntity<Void> updateUser(@PathVariable long userId, @RequestBody @Valid UserDTO userDTO) {
+    public ResponseEntity<Object> updateUser(@PathVariable long userId,
+                                           @RequestBody @Valid UserDTO userDTO,
+                                           BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
         User user = userMapper.mapToEntity(userDTO);
         userService.updateUserById(user, userId);
         return new ResponseEntity<>(HttpStatus.OK);

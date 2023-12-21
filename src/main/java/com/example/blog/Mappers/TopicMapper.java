@@ -6,16 +6,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TopicMapper {
-   public TopicDTO mapToDTO(Topic topic){
-       return TopicDTO.builder()
-               .id(topic.getId())
-               .name(topic.getName())
-               .build();
-   }
-   public Topic mapToEntity(TopicDTO topicDTO){
-       return Topic.builder()
-               .id(topicDTO.getId())
-               .name(topicDTO.getName())
-               .build();
-   }
+    public TopicDTO mapToDTO(Topic topic) {
+        TopicDTO topicDTO = new TopicDTO();
+        topicDTO.setId(topic.getId());
+        topicDTO.setName(topic.getName());
+        return topicDTO;
+    }
+
+    public Topic mapToEntity(TopicDTO topicDTO) {
+        Topic topic = new Topic();
+        topic.setId(topicDTO.getId());
+        topic.setName(topicDTO.getName());
+        return topic;
+    }
 }
