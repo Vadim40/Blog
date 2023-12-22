@@ -54,7 +54,7 @@
 
         @Column
         private boolean deleted=false;
-        @ElementCollection
+        @ElementCollection(fetch = FetchType.EAGER)
         @CollectionTable(
                 name="user_role",
                 joinColumns = @JoinColumn(name = "user_id")

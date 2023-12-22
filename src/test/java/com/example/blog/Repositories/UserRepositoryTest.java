@@ -15,9 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
@@ -94,10 +92,10 @@ class UserRepositoryTest {
 
     @Test
     public void findUsersByUsername() {
-        User user1 = userRepository.save(User.builder()
+        userRepository.save(User.builder()
                 .username("around")
                 .build());
-        User user2 = userRepository.save(User.builder()
+        userRepository.save(User.builder()
                 .username("Arron")
                 .build());
         Pageable pageable = PageRequest.of(0, 3);
@@ -120,7 +118,6 @@ class UserRepositoryTest {
                 .username("Arron")
                 .followers(followers)
                 .build());
-        Pageable pageable = PageRequest.of(0, 2);
         User user = userRepository.findUserByUsername(user3.getUsername()).orElseThrow(null);
         Assertions.assertThat(user.getFollowers().size()).isEqualTo(2);
     }

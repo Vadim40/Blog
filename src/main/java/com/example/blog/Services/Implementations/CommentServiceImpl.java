@@ -18,9 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -121,6 +119,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public boolean isCommentLiked(long commentId) {
+        if(! customUserDetailsService.isUserAuthenticated()){
+            return false;
+        }
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         return authenticatedUser.getLikedComments().contains(commentId);
     }

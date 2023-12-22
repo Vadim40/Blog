@@ -67,9 +67,9 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void toggleFollowStatus(long userToSubscribeId) {
+    public void toggleFollowStatus(String userToSubscribeId) {
         User authenticationUser = customUserDetailsService.getAuthenticatedUser();
-        User userToSubscribe = findUserById(userToSubscribeId);
+        User userToSubscribe = findUserByUsername(userToSubscribeId);
         if (authenticationUser.getFollowing().contains(userToSubscribe)) {
             authenticationUser.getFollowing().remove(userToSubscribe);
             userToSubscribe.getFollowers().remove(authenticationUser);
@@ -111,23 +111,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUserById(User user, long userId) {
-        checkUserAccess(userId);
-        user.setId(userId);
+    public User updateUserByUsername(User user, String username) {
+        checkUserAccess(username);
+        user.setId(findUserByUsername(username).getId());
         return userRepository.save(user);
     }
 
     @Override
     public boolean isFollowingUser(String username) {
+       if(! customUserDetailsService.isUserAuthenticated()){
+           return false;
+       }
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         User user = findUserByUsername(username);
         return authenticatedUser.getFollowing().contains(user);
     }
 
     @Override
-    public void deleteUserById(long userId) {
-        checkUserAccess(userId);
-        userRepository.deleteById(userId);
+    public void deleteUserByUsername(String username) {
+        checkUserAccess(username);
+        userRepository.deleteUserByUsername(username);
     }
 
     @Override
@@ -135,9 +138,9 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsByUsernameIgnoreCase(username);
     }
 
-    private void checkUserAccess(long userId) {
+    private void checkUserAccess(String username) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        if (!authenticatedUser.getRoles().contains(Role.ADMIN) && authenticatedUser.getId() != userId) {
+        if (!authenticatedUser.getRoles().contains(Role.ADMIN) && !authenticatedUser.getUsername().equals(username)) {
             throw new AccessDeniedException("You don't have permission to perform this action on this this user");
         }
     }

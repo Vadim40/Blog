@@ -2,7 +2,6 @@ package com.example.blog.Models.DTOs;
 
 import com.example.blog.Validators.Annotations.UniqueUsername;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -33,6 +32,6 @@ public class UserDTO {
     @Size(max = 25, message = "username should be no more than 25 characters")
     @UniqueUsername
     private String username;
-    private ImageDTO avatar;
+    private ImageDTO avatar=new ImageDTO();
 
 }

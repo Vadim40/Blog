@@ -12,7 +12,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -106,9 +105,7 @@ public class CommentController {
         CommentViewDTO commentViewDTO = new CommentViewDTO();
         commentViewDTO.setCommentDTO(commentDTO);
         commentViewDTO.setUserDTO(userDTO);
-        if (SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            commentViewDTO.setLiked(commentService.isCommentLiked(comment.getId()));
-        }
+        commentViewDTO.setLiked(commentService.isCommentLiked(comment.getId()));
         return commentViewDTO;
     }
 

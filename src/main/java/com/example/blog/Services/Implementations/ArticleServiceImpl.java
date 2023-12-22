@@ -179,6 +179,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public boolean isArticleFavorite(long articleId) {
+        if(! customUserDetailsService.isUserAuthenticated()){
+            return false;
+        }
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Article article = findPublishedArticleById(articleId);
         return authenticatedUser.getFavoriteArticles().contains(article);
@@ -186,6 +189,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public boolean isArticleLiked(long articleId) {
+        if(! customUserDetailsService.isUserAuthenticated()){
+            return false;
+        }
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         return authenticatedUser.getLikedArticles().contains(articleId);
     }

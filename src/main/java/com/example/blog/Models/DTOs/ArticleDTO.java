@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -23,6 +24,6 @@ public class ArticleDTO {
     private LocalDate creationDate;
     private List<ImageDTO> images;
     @Size(max = 3, message = "Maximum of 3 topics allowed")
-    private List<TopicDTO> topics;
+    private List<TopicDTO> topics=new ArrayList<>();
 
 }

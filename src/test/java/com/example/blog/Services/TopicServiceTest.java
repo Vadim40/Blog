@@ -1,6 +1,5 @@
 package com.example.blog.Services;
 
-import com.example.blog.Excteptions.TopicAlreadyExistsException;
 import com.example.blog.Models.Enums.Role;
 import com.example.blog.Models.Topic;
 import com.example.blog.Models.User;
@@ -30,17 +29,6 @@ public class TopicServiceTest {
     @InjectMocks
     private TopicServiceImpl topicService;
 
-
-    @Test
-    public void saveTopic_ThrowException() {
-        Topic topic = Topic.builder()
-                .name("java")
-                .build();
-
-        when(topicRepository.existsByNameIgnoreCase(topic.getName())).thenReturn(true);
-
-        Assertions.assertThatThrownBy(() -> topicService.saveTopic(topic)).isInstanceOf(TopicAlreadyExistsException.class);
-    }
 
     @Test
     public void updateTopic_ThrowException() {

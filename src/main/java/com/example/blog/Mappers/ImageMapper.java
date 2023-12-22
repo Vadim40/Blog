@@ -10,6 +10,9 @@ import java.io.IOException;
 @Component
 public class ImageMapper {
     public ImageDTO mapToDTO(Image image) {
+        if(image==null){
+            return null;
+        }
         ImageDTO imageDTO = new ImageDTO();
         imageDTO.setId(image.getId());
         imageDTO.setName(image.getName());

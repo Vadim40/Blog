@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class ArticleViewDTO {
-   private ArticleDTO articleDTO;
-   private UserDTO userDTO;
-   private boolean isFavorite=false;
-   private boolean isLiked=false;
+   private ArticleDTO articleDTO=new ArticleDTO();
+   private UserDTO userDTO=new UserDTO();
+   private boolean isFavorite;
+   private boolean isLiked;
 }

@@ -14,7 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -76,9 +75,9 @@ public class UserController {
         return new ResponseEntity<>(following, HttpStatus.OK);
     }
 
-    @PutMapping("/{userId}/toggle-subscriptions")
-    public ResponseEntity<Void> toggleSubscriptions(@PathVariable long userId) {
-        userService.toggleFollowStatus(userId);
+    @PutMapping("/{username}/toggle-subscriptions")
+    public ResponseEntity<Void> toggleSubscriptions(@PathVariable String username) {
+        userService.toggleFollowStatus(username);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -105,21 +104,21 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PutMapping("/{userId}/update")
-    public ResponseEntity<Object> updateUser(@PathVariable long userId,
+    @PutMapping("/{username}/update")
+    public ResponseEntity<Object> updateUser(@PathVariable String username,
                                            @RequestBody @Valid UserDTO userDTO,
                                            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
         User user = userMapper.mapToEntity(userDTO);
-        userService.updateUserById(user, userId);
+        userService.updateUserByUsername(user, username);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping("/{userId}/delete")
-    public ResponseEntity<Void> deleteUser(@PathVariable long userId) {
-        userService.deleteUserById(userId);
+    @DeleteMapping("/{username}/delete")
+    public ResponseEntity<Void> deleteUser(@PathVariable String username) {
+        userService.deleteUserByUsername(username);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -127,9 +126,7 @@ public class UserController {
         UserViewDTO userViewDTO = new UserViewDTO();
         UserDTO userDTO = userMapper.mapToDTO(user);
         userViewDTO.setUserDTO(userDTO);
-        if (SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             userViewDTO.setFollowed(userService.isFollowingUser(user.getUsername()));
-        }
         return userViewDTO;
     }
 

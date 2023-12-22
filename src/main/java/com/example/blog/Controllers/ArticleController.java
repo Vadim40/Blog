@@ -134,16 +134,16 @@ public class ArticleController {
 
     @GetMapping("/{articleId}")
     public ResponseEntity<Object> findArticleById(@PathVariable long articleId) {
-            Article article = articleService.findPublishedArticleById(articleId);
-            ArticleViewDTO articleViewDTO = mapArticleToArticleViewDTO(article);
-            return new ResponseEntity<>(articleViewDTO, HttpStatus.OK);
+        Article article = articleService.findPublishedArticleById(articleId);
+        ArticleViewDTO articleViewDTO = mapArticleToArticleViewDTO(article);
+        return new ResponseEntity<>(articleViewDTO, HttpStatus.OK);
     }
 
 
     @PutMapping("/{articleId}/publish")
     public ResponseEntity<Object> publishArticle(@PathVariable long articleId) {
-           articleService.publishArticle(articleId);
-           return new ResponseEntity<>(HttpStatus.OK);
+        articleService.publishArticle(articleId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/create")
@@ -196,10 +196,9 @@ public class ArticleController {
         ArticleViewDTO articleViewDTO = new ArticleViewDTO();
         articleViewDTO.setArticleDTO(articleDTO);
         articleViewDTO.setUserDTO(userDTO);
-        if (SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            articleViewDTO.setFavorite(articleService.isArticleFavorite(article.getId()));
-            articleViewDTO.setLiked(articleService.isArticleLiked(article.getId()));
-        }
+        articleViewDTO.setFavorite(articleService.isArticleFavorite(article.getId()));
+        articleViewDTO.setLiked(articleService.isArticleLiked(article.getId()));
+
         return articleViewDTO;
     }
 

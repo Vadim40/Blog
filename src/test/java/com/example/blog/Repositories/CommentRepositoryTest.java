@@ -2,7 +2,6 @@ package com.example.blog.Repositories;
 
 import com.example.blog.Models.Article;
 import com.example.blog.Models.Comment;
-import com.example.blog.Models.User;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.Set;
+
 
 
 @DataJpaTest

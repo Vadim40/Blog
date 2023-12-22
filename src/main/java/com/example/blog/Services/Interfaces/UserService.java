@@ -5,8 +5,6 @@ import com.example.blog.Models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Set;
-
 public interface UserService {
     User findUserByArticleId(long articleId);
 
@@ -18,7 +16,7 @@ public interface UserService {
 
     Page<User> findFollowing(String username, Pageable pageable);
 
-    void toggleFollowStatus(long userToSubscribeId);
+    void toggleFollowStatus(String userToSubscribeId);
 
 
     User setAvatar(Image image);
@@ -29,11 +27,11 @@ public interface UserService {
 
     User saveUser(User user);
 
-    User updateUserById(User user, long userId);
+    User updateUserByUsername(User user, String username);
 
     boolean isFollowingUser(String username);
 
-    void deleteUserById(long id);
+    void deleteUserByUsername(String username);
 
     boolean IsUsernameExists(String username);
 }

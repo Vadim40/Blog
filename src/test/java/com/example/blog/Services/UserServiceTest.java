@@ -63,10 +63,10 @@ public class UserServiceTest {
                 .followers(new ArrayList<>())
                 .build();
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
-        when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(userToSubscribe));
+        when(userRepository.findUserByUsername(anyString())).thenReturn(Optional.ofNullable(userToSubscribe));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        userService.toggleFollowStatus(1L);
+        userService.toggleFollowStatus("the core");
 
         Assertions.assertThat(user.getFollowing().size()).isEqualTo(1);
     }
@@ -91,13 +91,15 @@ public class UserServiceTest {
         long userId = 1L;
         User authenticatedUser = new User();
         authenticatedUser.getRoles().add(Role.USER);
+        authenticatedUser.setUsername("username");
         authenticatedUser.setId(userId);
 
         User user = new User();
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(authenticatedUser);
+        when(userRepository.findUserByUsername(anyString())).thenReturn(Optional.of(authenticatedUser));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        userService.updateUserById(user, userId);
+        userService.updateUserByUsername(user, "username");
 
         Assertions.assertThat(user.getId()).isEqualTo(userId);
     }
@@ -107,26 +109,27 @@ public class UserServiceTest {
         long userId = 1L;
         User authenticatedUser = new User();
         authenticatedUser.getRoles().add(Role.ADMIN);
+        authenticatedUser.setId(userId);
 
         User user = new User();
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(authenticatedUser);
+        when(userRepository.findUserByUsername(anyString())).thenReturn(Optional.of(authenticatedUser));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        userService.updateUserById(user, userId);
+        userService.updateUserByUsername(user, "username");
 
         Assertions.assertThat(user.getId()).isEqualTo(userId);
     }
 
     @Test
     public void updateUser_ThrowsException_Test() {
-        long userId = 1L;
         User authenticatedUser = new User();
         authenticatedUser.getRoles().add(Role.USER);
         authenticatedUser.setId(10L);
+        authenticatedUser.setUsername("ava");
         User user = new User();
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(authenticatedUser);
-
-        Assertions.assertThatThrownBy(() -> userService.updateUserById(user, userId))
+        Assertions.assertThatThrownBy(() -> userService.updateUserByUsername(user, "username"))
                 .isInstanceOf(AccessDeniedException.class);
 
 
