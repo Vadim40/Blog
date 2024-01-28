@@ -26,8 +26,6 @@ public class UserDTO {
     private String selfDescription;
     private LocalDate creationDate;
     @NotBlank(message = "password should be no empty")
-    @Size(min = 8, max = 255, message = "Password must be at least 8  characters")
-    private String password;
     @NotBlank(message = "username should be no empty")
     @Size(max = 25, message = "username should be no more than 25 characters")
     @UniqueUsername

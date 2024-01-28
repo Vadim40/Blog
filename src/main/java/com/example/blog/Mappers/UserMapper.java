@@ -1,42 +1,53 @@
 package com.example.blog.Mappers;
 
+import com.example.blog.Models.DTOs.RegistrationUserDTO;
 import com.example.blog.Models.DTOs.UserDTO;
+import com.example.blog.Models.DTOs.UserViewDTO;
 import com.example.blog.Models.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-
 @Component
 @RequiredArgsConstructor
 public class UserMapper {
-    private final ImageMapper imageMapper;
+    private final ImageMapper imageMapper = new ImageMapper();
 
-    public UserDTO mapToDTO(User user) {
+    public UserDTO mapToUserDTO(User user) {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
         userDTO.setCreationDate(user.getCreationDate());
-        userDTO.setPassword(user.getPassword());
         userDTO.setEmail(user.getEmail());
         userDTO.setFirstname(user.getFirstname());
         userDTO.setLastname(user.getLastname());
         userDTO.setSelfDescription(user.getSelfDescription());
         userDTO.setUsername(user.getUsername());
-        userDTO.setAvatar(imageMapper.mapToDTO(user.getAvatar()));
+        userDTO.setAvatar(imageMapper.mapToImageDTO(user.getAvatar()));
         return userDTO;
     }
 
-    public User mapToEntity(UserDTO userDTO) {
+    public User mapUserDTOToUser(UserDTO userDTO) {
         User user = new User();
         user.setId(userDTO.getId());
         user.setCreationDate(userDTO.getCreationDate());
-        user.setPassword(userDTO.getPassword());
         user.setEmail(userDTO.getEmail());
         user.setFirstname(userDTO.getFirstname());
         user.setLastname(userDTO.getLastname());
         user.setSelfDescription(userDTO.getSelfDescription());
         user.setUsername(userDTO.getUsername());
-        user.setAvatar(imageMapper.mapToEntity(userDTO.getAvatar()));
+        user.setAvatar(imageMapper.mapToImage(userDTO.getAvatar()));
         return user;
+    }
+
+    public User mapRegistrationUserDTOToUser(RegistrationUserDTO registrationUserDTO) {
+        User user = mapUserDTOToUser(registrationUserDTO.getUserDTO());
+        user.setPassword(registrationUserDTO.getPassword());
+        return user;
+    }
+
+    public UserViewDTO mapToUserViewDTO(User user, boolean isFollowingUser) {
+        UserViewDTO userViewDTO = new UserViewDTO();
+        userViewDTO.setUserDTO(mapToUserDTO(user));
+        userViewDTO.setFollowed(isFollowingUser);
+        return userViewDTO;
     }
 }

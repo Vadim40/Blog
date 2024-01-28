@@ -1,12 +1,9 @@
 package com.example.blog.Controllers;
 
-import com.example.blog.Excteptions.ArticleNotFoundException;
 import com.example.blog.Mappers.ArticleMapper;
-import com.example.blog.Mappers.UserMapper;
 import com.example.blog.Models.Article;
 import com.example.blog.Models.DTOs.ArticleDTO;
 import com.example.blog.Models.DTOs.ArticleViewDTO;
-import com.example.blog.Models.DTOs.UserDTO;
 import com.example.blog.Services.Implementations.ArticleServiceImpl;
 import com.example.blog.Services.Implementations.TopicServiceImpl;
 import jakarta.validation.Valid;
@@ -19,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +27,6 @@ public class ArticleController {
     private final ArticleServiceImpl articleService;
     private final TopicServiceImpl topicService;
     private final ArticleMapper articleMapper;
-    private final UserMapper userMapper;
 
     @GetMapping("/topic/{topicName}")
     public ResponseEntity<Object> findArticlesByTopic(@PathVariable String topicName,
@@ -50,7 +45,7 @@ public class ArticleController {
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
         CustomApiResponse customApiResponse = new CustomApiResponse(articleViewDTOPage,
                 topicService.findTopicFollowersCount(topicName));
         return new ResponseEntity<>(customApiResponse, HttpStatus.OK);
@@ -69,7 +64,7 @@ public class ArticleController {
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
         return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
 
@@ -83,7 +78,7 @@ public class ArticleController {
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
         return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
 
@@ -97,7 +92,7 @@ public class ArticleController {
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
         return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
 
@@ -112,7 +107,7 @@ public class ArticleController {
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
         return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
 
@@ -128,14 +123,14 @@ public class ArticleController {
         if (articles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToArticleViewDTO);
+        Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
         return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
 
     @GetMapping("/{articleId}")
     public ResponseEntity<Object> findArticleById(@PathVariable long articleId) {
         Article article = articleService.findPublishedArticleById(articleId);
-        ArticleViewDTO articleViewDTO = mapArticleToArticleViewDTO(article);
+        ArticleViewDTO articleViewDTO = mapArticleToDTOAndSetStates(article);
         return new ResponseEntity<>(articleViewDTO, HttpStatus.OK);
     }
 
@@ -152,9 +147,9 @@ public class ArticleController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        Article article = articleMapper.mapToEntity(articleDTO);
+        Article article = articleMapper.mapToArticle(articleDTO);
         article = articleService.saveArticle(article);
-        ArticleDTO savedArticleDTO = articleMapper.mapToDTO(article);
+        ArticleDTO savedArticleDTO = articleMapper.mapToArticleDTO(article);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedArticleDTO);
     }
 
@@ -166,7 +161,7 @@ public class ArticleController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        Article article = articleMapper.mapToEntity(articleDTO);
+        Article article = articleMapper.mapToArticle(articleDTO);
         articleService.updateArticleById(article, articleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -189,18 +184,12 @@ public class ArticleController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private ArticleViewDTO mapArticleToArticleViewDTO(Article article) {
-        ArticleDTO articleDTO = articleMapper.mapToDTO(article);
-        UserDTO userDTO = userMapper.mapToDTO(article.getUser());
-
-        ArticleViewDTO articleViewDTO = new ArticleViewDTO();
-        articleViewDTO.setArticleDTO(articleDTO);
-        articleViewDTO.setUserDTO(userDTO);
-        articleViewDTO.setFavorite(articleService.isArticleFavorite(article.getId()));
-        articleViewDTO.setLiked(articleService.isArticleLiked(article.getId()));
-
-        return articleViewDTO;
+    private ArticleViewDTO mapArticleToDTOAndSetStates(Article article) {
+        boolean isArticleFavorite = articleService.isArticleFavorite(article.getId());
+        boolean isArticleLiked = articleService.isArticleLiked(article.getId());
+        return articleMapper.mapToArticleViewDTO(article, isArticleFavorite, isArticleLiked);
     }
+
 
     private Pageable createPageable(int pageNumber, int pageSize, Sort.Direction direction, String sortBy) {
         return PageRequest.of(pageNumber - 1, pageSize, direction, sortBy);

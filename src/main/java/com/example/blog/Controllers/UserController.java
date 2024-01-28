@@ -2,7 +2,7 @@ package com.example.blog.Controllers;
 
 import com.example.blog.Mappers.ImageMapper;
 import com.example.blog.Mappers.UserMapper;
-import com.example.blog.Models.DTOs.UserDTO;
+import com.example.blog.Models.DTOs.RegistrationUserDTO;
 import com.example.blog.Models.DTOs.UserViewDTO;
 import com.example.blog.Models.Image;
 import com.example.blog.Models.User;
@@ -37,7 +37,7 @@ public class UserController {
         if (users.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<UserViewDTO> userViewDTOS = users.map(this::mapUserToUserViewDTO);
+        Page<UserViewDTO> userViewDTOS = users.map(this::mapUserToDTOAndSetState);
         return new ResponseEntity<>(userViewDTOS, HttpStatus.OK);
     }
 
@@ -45,7 +45,7 @@ public class UserController {
     @GetMapping("/{username}")
     public ResponseEntity<UserViewDTO> findUserByUsername(@PathVariable String username) {
         User user = userService.findUserByUsername(username);
-        UserViewDTO userViewDTO = mapUserToUserViewDTO(user);
+        UserViewDTO userViewDTO = this.mapUserToDTOAndSetState(user);
         return new ResponseEntity<>(userViewDTO, HttpStatus.OK);
     }
 
@@ -58,7 +58,7 @@ public class UserController {
         if (users.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<UserViewDTO> followers = users.map(this::mapUserToUserViewDTO);
+        Page<UserViewDTO> followers = users.map(this::mapUserToDTOAndSetState);
         return new ResponseEntity<>(followers, HttpStatus.OK);
     }
 
@@ -71,7 +71,7 @@ public class UserController {
         if (users.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<UserViewDTO> following = users.map(this::mapUserToUserViewDTO);
+        Page<UserViewDTO> following = users.map(this::mapUserToDTOAndSetState);
         return new ResponseEntity<>(following, HttpStatus.OK);
     }
 
@@ -85,7 +85,7 @@ public class UserController {
     public ResponseEntity<Void> uploadAvatar(@RequestParam MultipartFile file) {
         Image image;
         try {
-            image = imageMapper.mapToEntityFromMultipartFile(file);
+            image = imageMapper.mapToImageFromMultipartFile(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -94,24 +94,24 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Object> createUser(@RequestBody @Valid UserDTO userDTO,
-                                           BindingResult bindingResult) {
+    public ResponseEntity<Object> createUser(@RequestBody @Valid RegistrationUserDTO registrationUserDTO,
+                                             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        User user = userMapper.mapToEntity(userDTO);
+        User user = userMapper.mapRegistrationUserDTOToUser(registrationUserDTO);
         userService.saveUser(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{username}/update")
     public ResponseEntity<Object> updateUser(@PathVariable String username,
-                                           @RequestBody @Valid UserDTO userDTO,
-                                           BindingResult bindingResult) {
+                                             @RequestBody @Valid RegistrationUserDTO registrationUserDTO,
+                                             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        User user = userMapper.mapToEntity(userDTO);
+        User user = userMapper.mapRegistrationUserDTOToUser(registrationUserDTO);
         userService.updateUserByUsername(user, username);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -122,13 +122,11 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private UserViewDTO mapUserToUserViewDTO(User user) {
-        UserViewDTO userViewDTO = new UserViewDTO();
-        UserDTO userDTO = userMapper.mapToDTO(user);
-        userViewDTO.setUserDTO(userDTO);
-            userViewDTO.setFollowed(userService.isFollowingUser(user.getUsername()));
-        return userViewDTO;
+    private UserViewDTO mapUserToDTOAndSetState(User user) {
+        boolean isFollowingUser = userService.isFollowingUser(user.getUsername());
+        return userMapper.mapToUserViewDTO(user, isFollowingUser);
     }
+
 
     private Pageable createPageable(int pageNumber, int pageSize) {
         return PageRequest.of(pageNumber - 1, pageSize);

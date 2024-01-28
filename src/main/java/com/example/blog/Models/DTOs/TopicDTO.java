@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TopicDTO {
-    long id;
+    private long id;
     @Size(max = 30, message = "no more than 30 symbols")
     @UniqueName
-    String name;
+    private String name;
 }

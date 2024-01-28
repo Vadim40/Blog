@@ -9,8 +9,8 @@ import java.io.IOException;
 
 @Component
 public class ImageMapper {
-    public ImageDTO mapToDTO(Image image) {
-        if(image==null){
+    public ImageDTO mapToImageDTO(Image image) {
+        if (image == null) {
             return null;
         }
         ImageDTO imageDTO = new ImageDTO();
@@ -20,7 +20,7 @@ public class ImageMapper {
         return imageDTO;
     }
 
-    public Image mapToEntity(ImageDTO imageDTO) {
+    public Image mapToImage(ImageDTO imageDTO) {
         Image image = new Image();
         image.setId(imageDTO.getId());
         image.setName(imageDTO.getName());
@@ -28,7 +28,7 @@ public class ImageMapper {
         return image;
     }
 
-    public Image mapToEntityFromMultipartFile(MultipartFile file) throws IOException {
+    public Image mapToImageFromMultipartFile(MultipartFile file) throws IOException {
         Image image = new Image();
         image.setName(file.getOriginalFilename());
         image.setImageData(file.getBytes());

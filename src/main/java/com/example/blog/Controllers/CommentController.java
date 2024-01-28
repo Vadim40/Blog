@@ -1,9 +1,9 @@
 package com.example.blog.Controllers;
 
 import com.example.blog.Mappers.CommentMapper;
-import com.example.blog.Mappers.UserMapper;
 import com.example.blog.Models.Comment;
-import com.example.blog.Models.DTOs.*;
+import com.example.blog.Models.DTOs.CommentDTO;
+import com.example.blog.Models.DTOs.CommentViewDTO;
 import com.example.blog.Services.Implementations.CommentServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
     private final CommentServiceImpl commentService;
     private final CommentMapper commentMapper;
-    private final UserMapper userMapper;
 
     @GetMapping("/article/{articleId}")
     public ResponseEntity<Page<CommentViewDTO>> findCommentsByArticle(@PathVariable long articleId,
@@ -34,7 +33,7 @@ public class CommentController {
         if (comments.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<CommentViewDTO> commentViewDTOS = comments.map(this::mapCommentToCommentViewDTO);
+        Page<CommentViewDTO> commentViewDTOS = comments.map(this::mapCommentToDTOAndSetState);
         return new ResponseEntity<>(commentViewDTOS, HttpStatus.OK);
     }
 
@@ -47,7 +46,7 @@ public class CommentController {
         if (comments.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        Page<CommentViewDTO> commentViewDTOS = comments.map(this::mapCommentToCommentViewDTO);
+        Page<CommentViewDTO> commentViewDTOS = comments.map(this::mapCommentToDTOAndSetState);
         return new ResponseEntity<>(commentViewDTOS, HttpStatus.OK);
     }
 
@@ -58,7 +57,7 @@ public class CommentController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        Comment comment = commentMapper.mapToEntity(commentDTO);
+        Comment comment = commentMapper.mapToComment(commentDTO);
         commentService.addCommentToArticle(comment, articleId);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -70,7 +69,7 @@ public class CommentController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        Comment comment = commentMapper.mapToEntity(commentDTO);
+        Comment comment = commentMapper.mapToComment(commentDTO);
         commentService.addCommentToParentComment(comment, commentId);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -88,7 +87,7 @@ public class CommentController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        Comment comment = commentMapper.mapToEntity(commentDTO);
+        Comment comment = commentMapper.mapToComment(commentDTO);
         commentService.updateCommentById(comment, commentId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -99,14 +98,9 @@ public class CommentController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private CommentViewDTO mapCommentToCommentViewDTO(Comment comment) {
-        CommentDTO commentDTO = commentMapper.mapToDTO(comment);
-        UserDTO userDTO = userMapper.mapToDTO(comment.getUser());
-        CommentViewDTO commentViewDTO = new CommentViewDTO();
-        commentViewDTO.setCommentDTO(commentDTO);
-        commentViewDTO.setUserDTO(userDTO);
-        commentViewDTO.setLiked(commentService.isCommentLiked(comment.getId()));
-        return commentViewDTO;
+    private CommentViewDTO mapCommentToDTOAndSetState(Comment comment) {
+        boolean isCommentLiked = commentService.isCommentLiked(comment.getId());
+        return commentMapper.mapToCommentViewDTO(comment, isCommentLiked);
     }
 
     private Pageable createPageable(int pageNumber, int pageSize) {

@@ -27,7 +27,7 @@ public class TopicController {
         if (topics.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        List<TopicDTO> topicDTOS = topics.stream().map(topicMapper::mapToDTO).collect(Collectors.toList());
+        List<TopicDTO> topicDTOS = topics.stream().map(topicMapper::mapToTopicDTO).collect(Collectors.toList());
         return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
     }
 
@@ -38,7 +38,7 @@ public class TopicController {
         if (topics.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        List<TopicDTO> topicDTOS = topics.stream().map(topicMapper::mapToDTO).collect(Collectors.toList());
+        List<TopicDTO> topicDTOS = topics.stream().map(topicMapper::mapToTopicDTO).collect(Collectors.toList());
         return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
     }
 
@@ -47,7 +47,7 @@ public class TopicController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        Topic topic = topicMapper.mapToEntity(topicDTO);
+        Topic topic = topicMapper.mapToTopic(topicDTO);
         topicService.saveTopic(topic);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -56,7 +56,7 @@ public class TopicController {
     public ResponseEntity<Void> updateTopic(
             @PathVariable long topicId,
             @RequestBody TopicDTO topicDTO) {
-        Topic topic = topicMapper.mapToEntity(topicDTO);
+        Topic topic = topicMapper.mapToTopic(topicDTO);
         topicService.updateTopicById(topic, topicId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
