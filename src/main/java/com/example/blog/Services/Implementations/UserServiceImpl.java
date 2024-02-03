@@ -99,13 +99,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findUserByUsername(String username) {
         return userRepository.findUserByUsername(username).orElseThrow(
-                () -> new UserNotFoundException("User no found"));
+                () -> new UserNotFoundException("User not found"));
     }
 
     @Override
     public User saveUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.getRoles().add(Role.USER);
+        user.getRoles().add(Role.ROLE_USER);
         user.setCreationDate(LocalDate.now());
         return userRepository.save(user);
     }
@@ -140,8 +140,8 @@ public class UserServiceImpl implements UserService {
 
     private void checkUserAccess(String username) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        if (!authenticatedUser.getRoles().contains(Role.ADMIN) && !authenticatedUser.getUsername().equals(username)) {
-            throw new AccessDeniedException("You don't have permission to perform this action on this this user");
+        if (!authenticatedUser.getRoles().contains(Role.ROLE_ADMIN) && !authenticatedUser.getUsername().equals(username)) {
+            throw new AccessDeniedException("You don't have permission to perform this action on this user");
         }
     }
 }

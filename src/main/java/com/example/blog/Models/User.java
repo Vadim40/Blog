@@ -112,7 +112,7 @@
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
             return roles.stream()
-                    .map(role -> new SimpleGrantedAuthority(role.getDisplayName()))
+                    .map(role -> new SimpleGrantedAuthority(role.name()))
                     .collect(Collectors.toList());
         }
 

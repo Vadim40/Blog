@@ -96,7 +96,7 @@ public class CommentServiceImpl implements CommentService {
     private void checkCommentAccess(long commentId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Comment commentToCheck = findCommentById(commentId);
-        if (!authenticatedUser.getRoles().contains(Role.ADMIN) && !authenticatedUser.getComments().contains(commentToCheck)) {
+        if (!authenticatedUser.getRoles().contains(Role.ROLE_ADMIN) && !authenticatedUser.getComments().contains(commentToCheck)) {
             throw new AccessDeniedException("You don't have permission to perform this action on the comment");
         }
     }

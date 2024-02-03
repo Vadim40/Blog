@@ -131,7 +131,7 @@ public class ArticleServiceTest {
     @Test
     public void updateArticleById_UserRole_Test() {
         User user = new User();
-        user.getRoles().add(Role.USER);
+        user.getRoles().add(Role.ROLE_USER);
         long articleId = 1L;
         Article articleToUpdate = Article.builder()
                 .id(articleId)
@@ -152,7 +152,7 @@ public class ArticleServiceTest {
     @Test
     public void updateArticleById_AdminRole_Test() {
         User user = new User();
-        user.getRoles().add(Role.ADMIN);
+        user.getRoles().add(Role.ROLE_ADMIN);
         long articleId = 1L;
         Article articleToUpdate = Article.builder()
                 .id(articleId)
@@ -172,7 +172,7 @@ public class ArticleServiceTest {
     @Test
     public void updateArticleById_ThrowException_Test() {
         User user = new User();
-        user.getRoles().add(Role.USER);
+        user.getRoles().add(Role.ROLE_USER);
         long articleId = 1L;
         Article articleToUpdate = Article.builder()
                 .id(articleId)

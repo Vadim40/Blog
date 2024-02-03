@@ -71,7 +71,7 @@ public class TopicServiceImpl implements TopicService {
 
     private void checkAccess() {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        if (!authenticatedUser.getRoles().contains(Role.ADMIN)) {
+        if (!authenticatedUser.getRoles().contains(Role.ROLE_ADMIN)) {
             throw new AccessDeniedException("You don't have permission to perform this action on this topic ");
         }
     }

@@ -81,7 +81,7 @@ public class UserServiceTest {
 
         userService.saveUser(user);
 
-        Assertions.assertThat(user.getRoles().contains(Role.USER)).isEqualTo(true);
+        Assertions.assertThat(user.getRoles().contains(Role.ROLE_USER)).isEqualTo(true);
         Assertions.assertThat(user.getCreationDate()).isEqualTo(LocalDate.now());
         Assertions.assertThat(user.getPassword()).isEqualTo("1111");
     }
@@ -90,7 +90,7 @@ public class UserServiceTest {
     public void updateUser_UserRole_Test() {
         long userId = 1L;
         User authenticatedUser = new User();
-        authenticatedUser.getRoles().add(Role.USER);
+        authenticatedUser.getRoles().add(Role.ROLE_USER);
         authenticatedUser.setUsername("username");
         authenticatedUser.setId(userId);
 
@@ -108,7 +108,7 @@ public class UserServiceTest {
     public void updateUser_AdminRole_Test() {
         long userId = 1L;
         User authenticatedUser = new User();
-        authenticatedUser.getRoles().add(Role.ADMIN);
+        authenticatedUser.getRoles().add(Role.ROLE_ADMIN);
         authenticatedUser.setId(userId);
 
         User user = new User();
@@ -124,7 +124,7 @@ public class UserServiceTest {
     @Test
     public void updateUser_ThrowsException_Test() {
         User authenticatedUser = new User();
-        authenticatedUser.getRoles().add(Role.USER);
+        authenticatedUser.getRoles().add(Role.ROLE_USER);
         authenticatedUser.setId(10L);
         authenticatedUser.setUsername("ava");
         User user = new User();

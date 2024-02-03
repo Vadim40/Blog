@@ -106,7 +106,7 @@ public class CommentServiceTest {
     @Test
     public void updateCommentById_ByUserRole_Test() {
         User user = new User();
-        user.getRoles().add(Role.USER);
+        user.getRoles().add(Role.ROLE_USER);
         long commentId = 1L;
         Comment commentToUpdate = Comment.builder()
                 .id(commentId)
@@ -126,7 +126,7 @@ public class CommentServiceTest {
     @Test
     public void updateCommentById_ByAdminRole_Test() {
         User user = new User();
-        user.getRoles().add(Role.ADMIN);
+        user.getRoles().add(Role.ROLE_ADMIN);
         long commentId = 1L;
         Comment commentToUpdate = Comment.builder()
                 .id(commentId)
@@ -145,7 +145,7 @@ public class CommentServiceTest {
     @Test
     public void updateCommentById_ThrowException_Test() {
         User user = new User();
-        user.getRoles().add(Role.USER);
+        user.getRoles().add(Role.ROLE_USER);
         long commentId = 1L;
         Comment commentToUpdate = Comment.builder()
                 .id(commentId)

@@ -33,7 +33,7 @@ public class TopicServiceTest {
     @Test
     public void updateTopic_ThrowException() {
         User user = new User();
-        user.setRoles(Set.of(Role.USER));
+        user.setRoles(Set.of(Role.ROLE_USER));
         Topic topic = new Topic();
 
         when(customUserDetailsService.getAuthenticatedUser()).thenReturn(user);
