@@ -4,9 +4,11 @@ import com.example.blog.Mappers.CommentMapper;
 import com.example.blog.Models.Comment;
 import com.example.blog.Models.DTOs.CommentDTO;
 import com.example.blog.Models.DTOs.CommentViewDTO;
+import com.example.blog.Models.DTOs.ValidationErrorResponse;
 import com.example.blog.Services.Implementations.CommentServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-
+@Slf4j
 @RestController
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
@@ -31,6 +33,7 @@ public class CommentController {
         Pageable pageable = createPageable(pageNumber, pageSize);
         Page<Comment> comments = commentService.findParentCommentsByArticleIdOrderingByLikes(articleId, pageable);
         if (comments.isEmpty()) {
+            log.warn("no comments by this article: {}", articleId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<CommentViewDTO> commentViewDTOS = comments.map(this::mapCommentToDTOAndSetState);
@@ -44,6 +47,7 @@ public class CommentController {
         Pageable pageable = createPageable(pageNumber, pageSize);
         Page<Comment> comments = commentService.findCommentsByParentCommentIdOrderingByLikes(parentCommentId, pageable);
         if (comments.isEmpty()) {
+            log.warn("no comments by this parentComment: {}", parentCommentId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<CommentViewDTO> commentViewDTOS = comments.map(this::mapCommentToDTOAndSetState);
@@ -55,7 +59,9 @@ public class CommentController {
                                                       @RequestBody @Valid CommentDTO commentDTO,
                                                       BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+            ValidationErrorResponse errorResponse=new ValidationErrorResponse(bindingResult);
+            log.warn("validation errors creating comment to article: {}", errorResponse);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
         Comment comment = commentMapper.mapToComment(commentDTO);
         commentService.addCommentToArticle(comment, articleId);
@@ -67,7 +73,9 @@ public class CommentController {
                                                             @RequestBody @Valid CommentDTO commentDTO,
                                                             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+            ValidationErrorResponse errorResponse=new ValidationErrorResponse(bindingResult);
+            log.warn("validation errors creating comment to parentComment: {}", errorResponse);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
         Comment comment = commentMapper.mapToComment(commentDTO);
         commentService.addCommentToParentComment(comment, commentId);
@@ -85,7 +93,9 @@ public class CommentController {
                                                 @RequestBody @Valid CommentDTO commentDTO,
                                                 BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+            ValidationErrorResponse errorResponse=new ValidationErrorResponse(bindingResult);
+            log.warn("validation errors updating comment: {}", errorResponse);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
         Comment comment = commentMapper.mapToComment(commentDTO);
         commentService.updateCommentById(comment, commentId);

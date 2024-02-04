@@ -4,12 +4,14 @@ import com.example.blog.Mappers.ArticleMapper;
 import com.example.blog.Models.Article;
 import com.example.blog.Models.DTOs.ArticleDTO;
 import com.example.blog.Models.DTOs.ArticleViewDTO;
+import com.example.blog.Models.DTOs.ValidationErrorResponse;
 import com.example.blog.Services.Implementations.ArticleServiceImpl;
 import com.example.blog.Services.Implementations.TopicServiceImpl;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-
+@Slf4j
 @RestController
 @RequestMapping("/api/articles")
 @RequiredArgsConstructor
@@ -43,7 +45,8 @@ public class ArticleController {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByTopicName(topicName, pageable);
         if (articles.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            log.warn("No articles found by this topic: {}", topicName);
+            return new ResponseEntity<>( HttpStatus.NO_CONTENT);
         }
         Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
         CustomApiResponse customApiResponse = new CustomApiResponse(articleViewDTOPage,
@@ -62,6 +65,7 @@ public class ArticleController {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByUserUsername(username, pageable);
         if (articles.isEmpty()) {
+            log.warn("No articles found by this user: {}", username);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
@@ -76,13 +80,14 @@ public class ArticleController {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedFavoriteArticlesByAuthenticationUser(pageable);
         if (articles.isEmpty()) {
+            log.warn("No favorites found ");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
         return new ResponseEntity<>(articleViewDTOPage, HttpStatus.OK);
     }
 
-    @GetMapping("/draft")
+    @GetMapping("/drafts")
     public ResponseEntity<Page<ArticleViewDTO>> findDraftArticles(@RequestParam(defaultValue = "20") int pageSize,
                                                                   @RequestParam(defaultValue = "1") int pageNumber,
                                                                   @RequestParam(defaultValue = "ASC") Sort.Direction direction,
@@ -90,6 +95,7 @@ public class ArticleController {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findNotPublishedArticlesByAuthenticationUser(pageable);
         if (articles.isEmpty()) {
+            log.warn("No drafts found ");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
@@ -105,6 +111,7 @@ public class ArticleController {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByUserTopicsOfInterest(pageable);
         if (articles.isEmpty()) {
+            log.warn("No interests found ");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
@@ -121,6 +128,7 @@ public class ArticleController {
         Pageable pageable = createPageable(pageNumber, pageSize, direction, sortBy);
         Page<Article> articles = articleService.findPublishedArticlesByTitleIsContainingIgnoreCaseString(title, pageable);
         if (articles.isEmpty()) {
+            log.warn("No articles found by this title: {}", title);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<ArticleViewDTO> articleViewDTOPage = articles.map(this::mapArticleToDTOAndSetStates);
@@ -145,7 +153,9 @@ public class ArticleController {
     public ResponseEntity<Object> createArticle(@RequestBody @Valid ArticleDTO articleDTO,
                                                 BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+            ValidationErrorResponse errorResponse=new ValidationErrorResponse(bindingResult);
+            log.warn("validation errors creating Article: {}",errorResponse);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
         Article article = articleMapper.mapToArticle(articleDTO);
         article = articleService.saveArticle(article);
@@ -159,7 +169,9 @@ public class ArticleController {
             @RequestBody @Valid ArticleDTO articleDTO,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+            ValidationErrorResponse errorResponse=new ValidationErrorResponse(bindingResult);
+            log.warn("validation errors updating Article: {}", errorResponse);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
         Article article = articleMapper.mapToArticle(articleDTO);
         articleService.updateArticleById(article, articleId);

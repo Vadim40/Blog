@@ -3,6 +3,7 @@ package com.example.blog.Services.Implementations;
 import com.example.blog.Models.User;
 import com.example.blog.Repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
@@ -25,7 +26,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        User user = userRepository.findUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findUserByUsername(username).orElseThrow(() ->
+                new UsernameNotFoundException("User not found"));
         Set<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.name()))
                 .collect(Collectors.toSet());
@@ -41,6 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     public User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("authenticated user: {}", authentication.getName());
         String username = authentication.getName();
         return userRepository.findUserByUsername(username).orElseThrow(() -> new AuthenticationException("Not authenticated user") {
         });

@@ -4,11 +4,13 @@ import com.example.blog.Mappers.ImageMapper;
 import com.example.blog.Mappers.UserMapper;
 import com.example.blog.Models.DTOs.RegistrationUserDTO;
 import com.example.blog.Models.DTOs.UserViewDTO;
+import com.example.blog.Models.DTOs.ValidationErrorResponse;
 import com.example.blog.Models.Image;
 import com.example.blog.Models.User;
 import com.example.blog.Services.Implementations.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class UserController {
         Pageable pageable = createPageable(pageNumber, pageSize);
         Page<User> users = userService.findUsersByUsernameIsContainingIgnoreCase(username, pageable);
         if (users.isEmpty()) {
+            log.warn("No users found by this username: {}", username);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<UserViewDTO> userViewDTOS = users.map(this::mapUserToDTOAndSetState);
@@ -56,6 +59,7 @@ public class UserController {
         Pageable pageable = createPageable(pageNumber, pageSize);
         Page<User> users = userService.findFollowers(username, pageable);
         if (users.isEmpty()) {
+            log.warn("No followers found by this user {}", username);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<UserViewDTO> followers = users.map(this::mapUserToDTOAndSetState);
@@ -69,6 +73,7 @@ public class UserController {
         Pageable pageable = createPageable(pageNumber, pageSize);
         Page<User> users = userService.findFollowing(username, pageable);
         if (users.isEmpty()) {
+            log.warn("No following found by this user {}", username);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         Page<UserViewDTO> following = users.map(this::mapUserToDTOAndSetState);
@@ -94,10 +99,12 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Object> createUser(@RequestBody @Valid RegistrationUserDTO registrationUserDTO,
+    public ResponseEntity<Object> createUser(@Valid @RequestBody RegistrationUserDTO registrationUserDTO,
                                              BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+            ValidationErrorResponse errorResponse=new ValidationErrorResponse(bindingResult);
+            log.warn("validation errors creating user: {}",errorResponse);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
         User user = userMapper.mapRegistrationUserDTOToUser(registrationUserDTO);
         userService.saveUser(user);
@@ -109,7 +116,9 @@ public class UserController {
                                              @RequestBody @Valid RegistrationUserDTO registrationUserDTO,
                                              BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+            ValidationErrorResponse errorResponse=new ValidationErrorResponse(bindingResult);
+            log.warn("validation errors updating user: {}",errorResponse);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
         User user = userMapper.mapRegistrationUserDTOToUser(registrationUserDTO);
         userService.updateUserByUsername(user, username);
