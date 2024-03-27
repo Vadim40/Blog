@@ -13,11 +13,13 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @DataJpaTest
+@ActiveProfiles("test")
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 class UserRepositoryTest {
 
@@ -75,11 +77,13 @@ class UserRepositoryTest {
 
         Comment comment1 = commentRepository.save(Comment.builder()
                 .likes(10)
+                .article(articleRepository.save(Article.builder().user(user).build()))
                 .user(user)
                 .build());
 
         Comment comment2 = commentRepository.save(Comment.builder()
                 .likes(10)
+                .article(articleRepository.save(Article.builder().user(user).build()))
                 .user(user)
                 .build());
         User foundUser1 = userRepository.findUserByCommentsId(comment1.getId()).orElseThrow(

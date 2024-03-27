@@ -1,0 +1,171 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+    <!-- Create users_table -->
+    <changeSet id="create_users_table" author="vadim40">
+        <createTable tableName="users_table">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="firstname" type="varchar(255)"/>
+            <column name="lastname" type="varchar(255)"/>
+            <column name="username" type="varchar(255)"/>
+            <column name="email" type="varchar(255)"/>
+            <column name="password" type="varchar(255)"/>
+            <column name="self_description" type="varchar(255)"/>
+            <column name="creation_date" type="date"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Create articles_table -->
+    <changeSet id="create_articles_table" author="vadim40">
+        <createTable tableName="articles">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="text" type="varchar(255)"/>
+            <column name="title" type="varchar(255)"/>
+            <column name="likes" type="integer"/>
+            <column name="creation_date" type="date"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
+            <column name="published" type="boolean" defaultValue="false"/>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_article_user" references="users_table(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create comments_table -->
+    <changeSet id="create_comments_table" author="vadim40">
+        <createTable tableName="comments">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="text" type="varchar(255)"/>
+            <column name="likes" type="integer"/>
+            <column name="creation_date" type="date"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_comment_user" references="users_table(id)"/>
+            </column>
+            <column name="parent_comment_id" type="bigint">
+                <constraints foreignKeyName="fk_comment_parent_comment" references="comments(id)"/>
+            </column>
+            <column name="article_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_comment_article" references="articles(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create topics_table -->
+    <changeSet id="create_topics_table" author="vadim40">
+        <createTable tableName="topics">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(255)"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Create images_table -->
+    <changeSet id="create_images_table" author="vadim40">
+        <createTable tableName="images">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(255)"/>
+            <column name="type" type="varchar(255)"/>
+            <column name="deleted" type="boolean" defaultValue="false"/>
+            <column name="image_data" type="bytea"/>
+            <column name="article_id" type="bigint">
+                <constraints foreignKeyName="fk_image_article" references="articles(id)"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints foreignKeyName="fk_image_user" references="users_table(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create user_following table  -->
+    <changeSet id="create_user_following_table" author="vadim40">
+        <createTable tableName="user_following">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_following_user" references="users_table(id)"/>
+            </column>
+            <column name="subscription_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_following_subscription" references="users_table(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create user_favorite_articles  -->
+    <changeSet id="create_user_favorite_articles_table" author="vadim40">
+        <createTable tableName="user_favorite_articles">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_favorite_articles_user" references="users_table(id)"/>
+            </column>
+            <column name="article_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_favorite_articles_article" references="articles(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create user_liked_articles table  -->
+    <changeSet id="create_user_liked_articles_table" author="vadim40">
+        <createTable tableName="user_liked_articles">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_liked_articles_user" references="users_table(id)"/>
+            </column>
+            <column name="article_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_liked_articles_article" references="articles(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create user_liked_comments table -->
+    <changeSet id="create_user_liked_comments_table" author="vadim40">
+        <createTable tableName="user_liked_comments">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_liked_comments_user" references="users_table(id)"/>
+            </column>
+            <column name="comment_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_liked_comments_comment" references="comments(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create user_role_table -->
+    <changeSet id="create_user_role_table" author="vadim40">
+        <createTable tableName="user_role">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_role_user" references="users_table(id)"/>
+            </column>
+            <column name="role" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="create_article_topic_table" author="vadim40">
+        <createTable tableName="article_topic">
+            <column name="article_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_article_topic_article" references="articles(id)"/>
+            </column>
+            <column name="topic_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_article_topic_topic" references="topics(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+ <!--Create user_topic_interests table` -->
+    <changeSet id="create_user_topic_interests_table" author="vadim40">
+        <createTable tableName="user_topic_interests">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_topic_interests_user" references="users_table(id)"/>
+            </column>
+            <column name="topic_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_topic_interests_topic" references="topics(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

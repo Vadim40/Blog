@@ -33,7 +33,7 @@ public class Article {
     private String title;
     @Column
     private int likes;
-    @Column
+    @Column(name = "creation_date")
     private LocalDate creationDate;
 
     @Column

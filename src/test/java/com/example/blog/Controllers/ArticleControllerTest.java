@@ -6,34 +6,44 @@ import com.example.blog.Mappers.UserMapper;
 import com.example.blog.Models.Article;
 import com.example.blog.Services.Implementations.ArticleServiceImpl;
 import com.example.blog.Services.Implementations.TopicServiceImpl;
+import com.example.blog.Utils.JwtTokenUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
-@ExtendWith(MockitoExtension.class)
-@AutoConfigureMockMvc(addFilters = false)
-@WebMvcTest(controllers = ArticleController.class)
+
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc(printOnlyOnFailure = false)
 public class ArticleControllerTest {
 
-
     @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
+
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -45,10 +55,20 @@ public class ArticleControllerTest {
     private TopicServiceImpl topicService;
     @MockBean
     private UserMapper userMapper;
+    @MockBean
+    private JwtTokenUtils jwtTokenUtils;
+
+    @BeforeEach
+    public void setup() {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
 
     @Test
     public void findArticlesByTopic_StatusOk() throws Exception {
-        // Arrange
+
         Article mockArticle = new Article();
         mockArticle.setId(1L);
         mockArticle.setTitle("Test Article");
@@ -57,7 +77,7 @@ public class ArticleControllerTest {
         when(topicService.findTopicFollowersCount(eq("exampleTopic")))
                 .thenReturn(10);
 
-        // Act and Assert
+
         mockMvc.perform(MockMvcRequestBuilders.get("/api/articles/topic/{topicName}", "exampleTopic")
                         .param("pageSize", "20")
                         .param("pageNumber", "1")
@@ -89,20 +109,22 @@ public class ArticleControllerTest {
         long nonExistingArticleId = 1L;
 
         when(articleService.findPublishedArticleById(anyLong())).thenThrow(new ArticleNotFoundException("not found"));
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/articles/" + 1L, nonExistingArticleId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/articles/{articleId}/", nonExistingArticleId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
+    @WithMockUser
     void testToggleLikeStatus_Verify() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.put("/api/articles/" + 1L + "/toggle-like"))
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/articles/{articleId}/toggle-like", 1L))
                 .andExpect(MockMvcResultMatchers.status().isOk());
         verify(articleService).toggleLikeStatus(anyLong());
 
     }
 
     @Test
+    @WithMockUser
     void testCreateArticle_BadRequest() throws Exception {
         Article article = new Article();
         mockMvc.perform(MockMvcRequestBuilders.post("/api/articles/create")
@@ -110,6 +132,16 @@ public class ArticleControllerTest {
                         .content(objectMapper.writeValueAsString(article)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
+
+    @Test
+    @WithMockUser
+    void testDeleteArticle() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/articles/{articleId}/delete", 1L))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+
 
     private Page<Article> createMockArticlePage() {
         Article mockArticle = new Article();

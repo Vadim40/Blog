@@ -4,6 +4,7 @@ import com.example.blog.Models.Article;
 import com.example.blog.Models.Topic;
 import com.example.blog.Models.User;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
 
 
 import java.util.HashSet;
@@ -19,6 +21,7 @@ import java.util.List;
 
 
 @DataJpaTest
+@ActiveProfiles("test")
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 class ArticleRepositoryTest {
     @Autowired
@@ -29,11 +32,14 @@ class ArticleRepositoryTest {
     @Autowired
     private UserRepository userRepository;
 
-
     @Test
     public void testSaveArticle() {
+        User user = userRepository.save(User.builder()
+                .username("bad wolves")
+                .build());
         Article article2 = Article.builder()
                 .text("Article 2")
+                .user(user)
                 .build();
 
         Article savedArticle = articleRepository.save(article2);
@@ -45,15 +51,20 @@ class ArticleRepositoryTest {
 
     @Test
     void findByTitleContaining() {
+        User user = userRepository.save(User.builder()
+                .username("bad wolves")
+                .build());
         Article article1 = Article.builder()
                 .text("java is ...")
                 .title("it's something about test and java")
                 .published(true)
+                .user(user)
                 .build();
         Article article2 = Article.builder()
                 .text("about som")
                 .title("it's something about birds")
                 .published(true)
+                .user(user)
                 .build();
         articleRepository.save(article1);
         articleRepository.save(article2);
@@ -95,19 +106,23 @@ class ArticleRepositoryTest {
 
     @Test
     public void findArticleByTopicName() {
-
+        User user = userRepository.save(User.builder()
+                .username("bad wolves")
+                .build());
         Topic topic = topicRepository.save(new Topic());
         topic.setName("Java");
         Article article1 = Article.builder()
                 .topics(new HashSet<>(List.of(topic)))
                 .text("Article 1")
                 .published(true)
+                .user(user)
                 .build();
 
         Article article2 = Article.builder()
                 .text("Article 2")
                 .topics(new HashSet<>(List.of(topic)))
                 .published(true)
+                .user(user)
                 .build();
         articleRepository.save(article1);
         articleRepository.save(article2);

@@ -43,7 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     public User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("authenticated user: {}", authentication.getName());
+        log.info("authenticated user: {}", (authentication.getName() +" "+authentication.getAuthorities()));
         String username = authentication.getName();
         return userRepository.findUserByUsername(username).orElseThrow(() -> new AuthenticationException("Not authenticated user") {
         });

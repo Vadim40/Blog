@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
 
 @DataJpaTest
+@ActiveProfiles("test")
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 public class ImageRepositoryTest {
     @Autowired
@@ -26,12 +28,12 @@ public class ImageRepositoryTest {
 
     @Test
     void findImagesByArticleId() {
-
-        List<Image> images = List.of(new Image(), new Image(), new Image());
+        User user = userRepository.save(User.builder()
+                .username("bad wolves")
+                .build());
         Article article = articleRepository.save(Article.builder()
-                .id(1L)
                 .published(true)
-                .images(images)
+                .user(user)
                 .build());
 
         Image image1 = Image.
@@ -40,7 +42,7 @@ public class ImageRepositoryTest {
                 .build();
         imageRepository.save(image1);
 
-        List<Image> foundImages = imageRepository.findImagesByArticleId(1L);
+        List<Image> foundImages = imageRepository.findImagesByArticleId(article.getId());
 
         Assertions.assertThat(foundImages.size()).isEqualTo(1);
     }
