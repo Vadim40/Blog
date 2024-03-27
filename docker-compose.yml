@@ -1,0 +1,26 @@
+version: '3'
+services:
+  server:
+    image: vadim40/blog
+    container_name: blog
+    ports:
+      - 8080:8080
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.120.89:5433/blog
+    depends_on:
+      - db
+  db:
+    image: postgres
+    container_name: pos
+    ports:
+      - 5433:5432
+    environment:
+      - 'POSTGRES_PASSWORD=ghjuhn'
+      - 'POSTGRES_USER=postgres'
+    volumes:
+      - pos:/var/lib/postgresql/data
+
+
+volumes:
+  pos:
