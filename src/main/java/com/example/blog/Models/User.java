@@ -87,20 +87,20 @@
 
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
         private Image avatar;
-        @ElementCollection
-        @CollectionTable(
+        @ManyToMany
+        @JoinTable(
                 name = "user_liked_articles",
-                joinColumns = @JoinColumn(name = "user_id")
+                joinColumns = @JoinColumn(name = "user_id"),
+                inverseJoinColumns = @JoinColumn(name = "article_id")
         )
-        @Column(name = "article_id")
-        private List<Long> likedArticles=new ArrayList<>();
-        @ElementCollection
-        @CollectionTable(
+        private List<Article> likedArticles=new ArrayList<>();
+        @ManyToMany
+        @JoinTable(
                 name = "user_liked_comments",
-                joinColumns = @JoinColumn(name = "user_id")
+                joinColumns = @JoinColumn(name = "user_id"),
+                inverseJoinColumns = @JoinColumn(name = "comment_id")
         )
-        @Column(name = "comment_id")
-        private List<Long> likedComments=new ArrayList<>();
+        private List<Comment> likedComments=new ArrayList<>();
 
         @ManyToMany
         @JoinTable(

@@ -106,11 +106,11 @@ public class CommentServiceImpl implements CommentService {
     public void toggleLikeStatus(long commentId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Comment comment = findCommentById(commentId);
-        if (authenticatedUser.getLikedComments().contains(commentId)) {
-            authenticatedUser.getLikedComments().remove(commentId);
+        if (authenticatedUser.getLikedComments().contains(comment)) {
+            authenticatedUser.getLikedComments().remove(comment);
             comment.setLikes(comment.getLikes() - 1);
         } else {
-            authenticatedUser.getLikedComments().add(commentId);
+            authenticatedUser.getLikedComments().add(comment);
             comment.setLikes(comment.getLikes() + 1);
         }
         commentRepository.save(comment);
@@ -122,7 +122,8 @@ public class CommentServiceImpl implements CommentService {
         if(! customUserDetailsService.isUserAuthenticated()){
             return false;
         }
+        Comment comment = findCommentById(commentId);
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        return authenticatedUser.getLikedComments().contains(commentId);
+        return authenticatedUser.getLikedComments().contains(comment);
     }
 }
