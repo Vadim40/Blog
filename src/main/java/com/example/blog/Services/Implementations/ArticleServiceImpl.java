@@ -165,12 +165,12 @@ public class ArticleServiceImpl implements ArticleService {
     public Article toggleLikeStatus(long articleId) {
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
         Article article = findPublishedArticleById(articleId);
-        if (authenticatedUser.getLikedArticles().contains(articleId)) {
+        if (authenticatedUser.getLikedArticles().contains(article)) {
             article.setLikes(article.getLikes() - 1);
-            authenticatedUser.getLikedArticles().remove(articleId);
+            authenticatedUser.getLikedArticles().remove(article);
         } else {
             article.setLikes(article.getLikes() + 1);
-            authenticatedUser.getLikedArticles().add(articleId);
+            authenticatedUser.getLikedArticles().add(article);
         }
 
         userRepository.save(authenticatedUser);
@@ -193,7 +193,8 @@ public class ArticleServiceImpl implements ArticleService {
             return false;
         }
         User authenticatedUser = customUserDetailsService.getAuthenticatedUser();
-        return authenticatedUser.getLikedArticles().contains(articleId);
+        Article article = findPublishedArticleById(articleId);
+        return authenticatedUser.getLikedArticles().contains(article);
     }
 
 }
